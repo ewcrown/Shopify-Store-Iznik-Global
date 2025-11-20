@@ -1,0 +1,218 @@
+{% liquid
+  assign product = closest.product
+  assign size_chart_images = product.metafields.custom.size_chart_images.value
+%}
+
+<div class="size-chart-button-block" {{ block.shopify_attributes }}>
+  {% if size_chart_images != blank and size_chart_images.size > 0 %}
+    <side-drawer-opener
+      class="size-chart-button__opener no-js-hidden"
+      data-side-drawer="#SizeChartModal-{{ block.id }}"
+    >
+      <button
+        id="SizeChartButton-{{ block.id }}"
+        class="size-chart-button link button button--tertiary"
+        type="button"
+        aria-haspopup="dialog"
+        style="
+          {% if block.settings.button_width == 'full' %}
+            width: 100%;
+          {% elsif block.settings.button_width == 'custom' %}
+            width: {{ block.settings.button_width_custom }}%;
+          {% endif %}
+        "
+      >
+        {% if block.settings.button_icon != 'none' %}
+          <span class="size-chart-button__icon">
+            {% render 'icon', icon: block.settings.button_icon, width: block.settings.button_icon_size %}
+          </span>
+        {% endif %}
+        <span class="size-chart-button__text">{{ block.settings.button_text | default: 'Size Chart' }}</span>
+      </button>
+    </side-drawer-opener>
+
+    <side-drawer
+      class="size-chart-modal drawer fixed top-0 left-0 z-9 w-screen h-full flex justify-center no-js-hidden"
+      element-s-popup
+      id="SizeChartModal-{{ block.id }}"
+    >
+      <div id="Drawer-Overlay-Size-Chart" class="drawer__overlay fixed inset-0 cursor-pointer"></div>
+      <div
+        class="popup__inner size-chart-modal__content w-auto h-full md:h-auto absolute-c-c flex flex-column global-settings-popup"
+        role="dialog"
+        aria-modal="true"
+        aria-label="{{ block.settings.button_text | default: 'Size Chart' }}"
+        tabindex="-1"
+        style="--modal-max-width: 90vw; --modal-max-height: 90dvh;"
+      >
+        <div class="w-full h-full overflow-auto cus-scrollbar" style="--p: 2rem;">
+          <div class="drawer__header flex justify-between items-center relative"
+            style="--gap-x: 2rem; --p: 1.5rem 0;"
+          >
+            <h2 class="size-chart-modal__title h3" style="margin: 0;">
+              {{ block.settings.modal_title | default: 'Size Chart' }}
+            </h2>
+            <button 
+              class="drawer__close block t-button bor-none rounded-full cursor-pointer" 
+              type="button" 
+              onclick="this.closest('side-drawer').close()" 
+              aria-label="{{ 'accessibility.close_dialog' | t }}"
+              style="--top: 0.3rem; --right: 0.3rem;"
+            >
+              {{- 'icon-close.svg' | inline_asset_content -}}
+            </button>
+          </div>
+          <div class="size-chart-modal__images" style="display: flex; flex-direction: column; gap: 2rem;">
+            {% for image in size_chart_images %}
+              <div class="size-chart-image-wrapper">
+                <img
+                  src="{{ image | image_url: width: 1200 }}"
+                  alt="{{ image.alt | default: 'Size Chart' }}"
+                  loading="lazy"
+                  width="{{ image.width }}"
+                  height="{{ image.height }}"
+                  style="width: 100%; height: auto; display: block;"
+                >
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </side-drawer>
+  {% else %}
+    {%- if request.design_mode -%}
+      <div class="size-chart-button-placeholder" style="padding: 1rem; border: 1px dashed #ccc; text-align: center; color: #999;">
+        <p>Size Chart Button</p>
+        <p style="font-size: 0.9em;">Add images to the "custom.size_chart_images" metafield to display the size chart.</p>
+      </div>
+    {%- endif -%}
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  .size-chart-button-block {
+    margin-bottom: 1rem;
+  }
+
+  .size-chart-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    text-decoration: none;
+  }
+
+  .size-chart-button__icon {
+    display: flex;
+    align-items: center;
+  }
+
+  .size-chart-modal__images {
+    max-width: 100%;
+  }
+
+  .size-chart-image-wrapper {
+    width: 100%;
+  }
+
+  @media screen and (max-width: 749px) {
+    .size-chart-modal__content {
+      width: calc(100% - 2rem);
+      max-width: 100%;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Size Chart Button",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Button Settings"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Size Chart"
+    },
+    {
+      "type": "select",
+      "id": "button_icon",
+      "label": "Button Icon",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "ruler",
+          "label": "Ruler"
+        },
+        {
+          "value": "info",
+          "label": "Info"
+        },
+        {
+          "value": "question",
+          "label": "Question"
+        }
+      ],
+      "default": "ruler"
+    },
+    {
+      "type": "range",
+      "id": "button_icon_size",
+      "label": "Icon Size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "button_width",
+      "label": "Button Width",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Auto"
+        },
+        {
+          "value": "full",
+          "label": "Full Width"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "range",
+      "id": "button_width_custom",
+      "label": "Custom Width",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100,
+      "visible_if": "{{ block.settings.button_width == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "Modal Settings"
+    },
+    {
+      "type": "text",
+      "id": "modal_title",
+      "label": "Modal Title",
+      "default": "Size Chart"
+    }
+  ]
+}
+{% endschema %}
+

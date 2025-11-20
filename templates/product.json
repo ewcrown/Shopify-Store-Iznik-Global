@@ -276,6 +276,18 @@
                 "btn_text": "Size Guide"
               }
             },
+            "size_chart_button": {
+              "type": "size-chart-button",
+              "settings": {
+                "button_text": "Size Chart",
+                "button_icon": "ruler",
+                "button_icon_size": 16,
+                "button_width": "auto",
+                "button_width_custom": 100,
+                "modal_title": "Size Chart"
+              },
+              "blocks": {}
+            },
             "buy_buttons_wHmGmK": {
               "type": "buy-buttons",
               "name": "t:names.product_buy_buttons",
@@ -586,6 +598,7 @@
             "variant_picker_R3rGDr",
             "infinite_options_app_block_GF9Wmb",
             "esc_size_charts_app_block_hnbeTC",
+            "size_chart_button",
             "buy_buttons_wHmGmK",
             "accordion_wRparT"
           ]

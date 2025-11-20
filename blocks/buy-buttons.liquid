@@ -155,6 +155,16 @@
             --gap: {{ block_settings.gap }}px;
           "
         >
+          {%- comment -%} Render size chart button before quantity if it exists {%- endcomment -%}
+          {%- for section_block in section.blocks -%}
+            {%- if section_block.type == 'size-chart-button' -%}
+              {%- assign size_chart_block = section_block -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if size_chart_block -%}
+            {%- render 'size-chart-button-inline', block: size_chart_block, product: product -%}
+          {%- endif -%}
           {% content_for 'block',
             type: 'quantity',
             id: 'quantity'
@@ -185,6 +195,10 @@
       {%- endform -%}
           {% endif %}
        
+      {%- comment -%} Render size chart modal outside form if it exists {%- endcomment -%}
+      {%- if size_chart_block -%}
+        {%- render 'size-chart-modal', block: size_chart_block, product: product -%}
+      {%- endif -%}
    
 
 

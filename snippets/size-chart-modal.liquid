@@ -1,0 +1,55 @@
+{% liquid
+  assign size_chart_images = product.metafields.custom.size_chart_images.value
+%}
+
+{% if size_chart_images != blank and size_chart_images.size > 0 %}
+  <side-drawer
+    class="size-chart-modal drawer fixed top-0 left-0 z-9 w-screen h-full flex justify-center no-js-hidden"
+    element-s-popup
+    id="SizeChartModal-{{ block.id }}"
+  >
+    <div id="Drawer-Overlay-Size-Chart" class="drawer__overlay fixed inset-0 cursor-pointer"></div>
+    <div
+      class="popup__inner size-chart-modal__content w-auto h-full md:h-auto absolute-c-c flex flex-column global-settings-popup"
+      role="dialog"
+      aria-modal="true"
+      aria-label="{{ block.settings.button_text | default: 'Size Chart' }}"
+      tabindex="-1"
+      style="--modal-max-width: 90vw; --modal-max-height: 90dvh;"
+    >
+      <div class="w-full h-full overflow-auto cus-scrollbar" style="--p: 2rem;">
+        <div class="drawer__header flex justify-between items-center relative"
+          style="--gap-x: 2rem; --p: 1.5rem 0;"
+        >
+          <h2 class="size-chart-modal__title h3" style="margin: 0;">
+            {{ block.settings.modal_title | default: 'Size Chart' }}
+          </h2>
+          <button 
+            class="drawer__close block t-button bor-none rounded-full cursor-pointer" 
+            type="button" 
+            onclick="this.closest('side-drawer').close()" 
+            aria-label="{{ 'accessibility.close_dialog' | t }}"
+            style="--top: 0.3rem; --right: 0.3rem;"
+          >
+            {{- 'icon-close.svg' | inline_asset_content -}}
+          </button>
+        </div>
+        <div class="size-chart-modal__images" style="display: flex; flex-direction: column; gap: 2rem;">
+          {% for image in size_chart_images %}
+            <div class="size-chart-image-wrapper">
+              <img
+                src="{{ image | image_url: width: 1200 }}"
+                alt="{{ image.alt | default: 'Size Chart' }}"
+                loading="lazy"
+                width="{{ image.width }}"
+                height="{{ image.height }}"
+                style="width: 100%; height: auto; display: block;"
+              >
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </side-drawer>
+{% endif %}
+
