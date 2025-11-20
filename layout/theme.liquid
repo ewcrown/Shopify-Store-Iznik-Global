@@ -1,0 +1,187 @@
+<!doctype html>
+<html class="no-js{% if request.design_mode %} shopify-design-mode{% endif %}" lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="">
+    {%- comment -%} Canonical (Shopify-native) {%- endcomment -%}
+<link rel="canonical" href="{{ canonical_url }}" />
+
+{%- comment -%} Country ISO bootstrap (Shopify-provided; no external calls) {%- endcomment -%}
+<script>
+  window.__ISO__ = {{ localization.country.iso_code | json }};
+</script>
+
+{%- comment -%} Hreflang (reciprocal): PK = en-pk, Global = en, x-default = Global {%- endcomment -%}
+<link rel="alternate" hreflang="en-pk" href="https://iznikfashions.com{{ request.path }}" />
+<link rel="alternate" hreflang="en"    href="https://global.iznikfashions.com{{ request.path }}" />
+<link rel="alternate" hreflang="x-default" href="https://global.iznikfashions.com{{ request.path }}" />
+
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+
+    <link
+      rel="canonical"
+      href="{{ canonical_url }}"
+      canonical-url="{{ shop.url }}/"
+    >
+
+    {%- if settings.favicon != blank -%}
+      <link
+        rel="icon"
+        type="image/png"
+        href="{{ settings.favicon | image_url: width: 32, height: 32 }}"
+      >
+    {%- endif -%}
+
+    {%- unless settings.type_header_font.system?
+      and settings.type_body_font.system?
+      and settings.type_subheading_font.system?
+    -%}
+      <link
+        rel="preconnect"
+        href="https://fonts.shopifycdn.com"
+        crossorigin
+      >
+    {%- endunless -%}
+
+    <title>
+      {{ page_title }}
+      {%- if current_tags %}
+        &ndash; tagged "{{ current_tags | join: ', ' }}"
+      {%- endif -%}
+      {%- if current_page != 1 %}
+        &ndash; Page {{ current_page -}}
+      {%- endif -%}
+      {%- unless page_title contains shop.name %}
+        &ndash; {{ shop.name -}}
+      {%- endunless -%}
+    </title>
+
+    {% if page_description %}
+      <meta name="description" content="{{ page_description | escape }}">
+    {% endif %}
+
+    {% render 'meta-tags' %}
+
+    {% render 'global-style' %}
+
+    {% render 'global-css' %}
+
+    {%- render 'global-script' -%}
+
+    {{ 'ew-styles.css' | asset_url | stylesheet_tag }}
+
+    {{ content_for_header }}
+  </head>
+
+  <body
+    class="
+      template-{{ request.page_type | replace: 'customers/', '' }}
+      {% if settings.animations_hover_elements != 'none' %} card-hover--{{ settings.animations_hover_elements }}{% endif %}
+      {% if settings.animation_hover_buttons %} button-hover--effect{% endif %}
+      {% if settings.enable_preloading_screen %} has--preload-screen{% endif %}
+    "
+  >
+    {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+
+    {%- if settings.enable_preloading_screen -%}
+      {% render 'preload-screen' %}
+    {%- endif -%}
+
+    <script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'search-form.js' | asset_url }}" defer="defer"></script>
+
+      <div id="header-group">
+        {% sections 'header-group' %}
+      </div>
+
+    {%- liquid
+      sections 'popup-group'
+      sections 'general-group'
+      sections 'toolbar-mobile'
+    -%}
+
+    <main
+      id="MainContent"
+      class="content-for-layout focus-none"
+      role="main"
+      tabindex="-1"
+    >
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+    <script>
+(function() {
+  // --- CONFIG ---
+  const IPINFO_TOKEN = "73b8e1772d9ad6"; // your token
+  const PK_DOMAIN = "iznikfashions.com";
+  const GLOBAL_DOMAIN = "global.iznikfashions.com";
+
+  // --- HELPER: Bot & Editor Detection ---
+  const UA = (navigator.userAgent || "").toLowerCase();
+  const IS_GOOGLE = /(googlebot|googlebot-image|googlebot-news|googlebot-video|google-inspectiontool|adsbot-google|adsbot-google-mobile|apis-google|mediapartners-google|feedfetcher-google|firebase-app-indexing|google-read-aloud|duplexweb-google|storebot-google|googleother|google favicon)/i.test(UA);
+  const IS_OTHER_ENGINE = /(bingbot|duckduckbot|yandexbot|baiduspider|sogou|exabot|facebot|facebookexternalhit|twitterbot|linkedinbot|slackbot|pinterest|applebot|semrushbot|ahrefsbot|mj12bot|dotbot|petalbot|seznambot|qwantify|rogerbot|crawler4j|ia_archiver)/i.test(UA);
+  const IN_DESIGN_MODE = (window.Shopify && Shopify.designMode) ? true : false;
+
+  if (IS_GOOGLE || IS_OTHER_ENGINE || IN_DESIGN_MODE) return; // skip bots & Shopify editor
+
+  const HOST = location.hostname;
+  const PATH = location.pathname + location.search + location.hash;
+
+  // --- MAIN GEO DETECTION via IPINFO ---
+  fetch(`https://ipinfo.io/json?token=${IPINFO_TOKEN}`)
+    .then(res => res.json())
+    .then(data => {
+      const country = (data && data.country || "").toUpperCase();
+      if (!country) return; // no country = do nothing
+
+      // --- Redirect Logic ---
+      // Case 1: Pakistani user on Global → redirect to PK
+      if (HOST.indexOf(GLOBAL_DOMAIN) === 0 && country === "PK") {
+        location.replace("https://" + PK_DOMAIN + PATH);
+      }
+
+      // Case 2: Non-Pakistani user on PK → redirect to Global
+      else if (HOST.indexOf(PK_DOMAIN) === 0 && country !== "PK") {
+        location.replace("https://" + GLOBAL_DOMAIN + PATH);
+      }
+
+      // Else: stay put
+    })
+    .catch(err => console.error("Geo redirect (ipinfo) failed:", err));
+})();
+const openBtn = document.getElementById('ew-iznik-open-btn');
+const closeBtn = document.getElementById('ew-iznik-close-btn');
+const overlay = document.getElementById('ew-iznik-overlay');
+
+openBtn?.addEventListener('click', () => {
+  overlay.style.display = 'flex';
+});
+
+closeBtn?.addEventListener('click', () => {
+  overlay.style.display = 'none';
+});
+
+window?.addEventListener('click', (e) => {
+  if (e.target === overlay) {
+    overlay.style.display = 'none';
+  }
+});
+</script>
+
+    <ul hidden>
+      <li id="a11y-refresh-page-message">{{ 'accessibility.refresh_page' | t }}</li>
+      <li id="a11y-new-window-message">{{ 'accessibility.link_messages.new_window' | t }}</li>
+    </ul>
+
+    {%- if settings.predictive_search_enabled -%}
+      <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
+
+    {% render 'halo-popup' %}
+  </body>
+</html>

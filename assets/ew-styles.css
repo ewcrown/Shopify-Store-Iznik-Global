@@ -1,0 +1,483 @@
+.product-form__buttons {
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start !important;
+}
+
+.add-to-cart-button-container, .add-to-cart-button-container * {
+    width: 100%;
+}
+
+.radio-size-options {
+    display: flex !important;
+}
+
+.hdr-custom-size-opt input[type=radio]:checked+label, .Checked+label {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+}
+.hdr-custom-size-opt label {
+    cursor: pointer;
+    font-family: Montserrat,sans-serif;
+    font-weight: 400;
+    letter-spacing: 1px!important;
+    text-transform: uppercase;
+    position: relative;
+    display: block;
+    line-height: 1;
+    padding: 12px;
+    font-size: .8125em;
+    font-style: normal;
+    background-color: #fff;
+    border: 1px solid #e8e8e1;
+    color: #222323;
+    text-align: center;
+    margin: 0;
+    min-width: 46px;
+}
+
+.hdr-custom-size-opt {
+    list-style-type: none;
+    margin: 0;
+    padding: 0 0 10px;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap:10px;
+}
+
+.hdr-custom-size-opt input{
+    display:none;
+}
+
+.product-details:has(input[value="Unstitched"]:checked) .note-variant,
+.product-details:has(input[value="Stitched"]:checked) .yard,
+.product-details:has(input[value="Unstitched"]:checked) .add-trousers,
+.product-details:has(input[value="Unstitched"]:checked) .iznik-full-sleeves-lining{
+    display:none !important;   
+}
+
+
+
+.product-details .radio-size-options {
+    display:none !important;
+}
+
+.product-details:has(input[value="Stitched"]:checked) .radio-size-options {
+    display:flex !important;
+}
+
+.product-details:has(input[value="Stitched"]:checked):has(.hdr-custom-size-opt input:checked)
+  .add-to-cart-button {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.product-details:has(input[value="Stitched"]:checked):not(:has(.hdr-custom-size-opt input:checked))
+  .add-to-cart-button {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.note-variant {
+    margin: 20px 0;
+    display: block;
+    font-size:12px;
+}
+
+.list-menu__item label, .list-menu__item input[type=checkbox] {
+    font-size: 13px !important;
+}
+
+@media(max-width:767px){
+
+.stl-hotspot {
+    width: 16px !important;
+    height: 16px !important;
+}
+ .group-block--content-overlay>.group-block-content {
+    justify-content: flex-end !important;
+ }
+ .group-block--content-overlay>.group-block-content .rte>*:last-child {
+    font-size: 20px !important;
+    text-transform: uppercase !important;
+    }   
+    .group-block--content-overlay>.group-block-content .button {
+    font-size: 14px !important;
+}
+.submit-icon-size svg {
+    width: 20px !important;
+    height: 20px !important;
+}
+.header__icon .icon {
+    height: 15px !important;
+    width: 16px !important;
+}
+.header__heading-link {
+    padding: 0 !important;
+}
+.header-logo__image-container{
+        height: auto !important;
+    width: auto !important;
+}
+.header-logo__image-container img {
+    object-fit: contain;
+    width: 90px !important;
+}
+.header__heading,
+.header__heading * {
+    height: 60px !important;
+}
+.menu-drawer__close-button,
+.drawer__container .list-menu__item {
+    padding-left:0 !important;
+    padding-right:0 !important;
+}
+}
+
+
+.stl-product-price {
+    color: #000 !important;
+    font-weight: 700!important;
+}
+
+.swiper-button-prev .fill-bg {
+    border-radius: 30px !important;
+}
+
+
+.media-gallery--carousel .swiper-button,
+.media-gallery--carousel .video-dialog-button__icon {
+    display:none !important;
+}
+.card__badge span {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 9;
+    background: #e27b77;
+    padding: 3px 10px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    font-family: monospace;
+}
+/* Rahat css */
+.ew-iznik-popup {
+    background-color: #fff;
+    padding: 30px 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: fit-content !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+    max-height: 70%;
+    overflow-y: scroll;
+}
+
+/* end */
+
+
+
+.ew-special-text {
+    text-align: center;
+    position: absolute;
+    bottom: -120px;
+    width: 100%;
+    left: 0;
+      display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#PageContainer .shopify-payment-button__button, 
+#PageContainer .additional-checkout-buttons, 
+#PageContainer .shopify-payment-button {
+  display:block !important;
+}
+#PageContainer:has(.product-block[data-dynamic-variants-enabled] .variant-input-wrap .variant-input[data-value^="Unstitched"] input:checked) #infiniteoptions-container .add-trousers1 {
+    display: block!important;
+    margin-top: -64px;
+    margin-bottom: -30px;
+}
+.product-block--price span[data-product-price-wrap] {
+    margin-right: 10px;
+}
+
+.product-block--price span[data-product-price-wrap] *{
+  font-family:var(--typeHeaderPrimary),var(--typeHeaderFallback) !important;
+}
+
+.product-block--price span[data-compare-price] {
+  margin-right:0px !important;
+  padding-right:0px !important;
+}
+/* .iz-conut-down-pre-book {
+    display: none;
+} */
+
+.iznik-collection-banner img {
+  width: 100%;
+  height: 865px;
+  object-fit: cover;
+  object-position: top;
+}
+
+.esc-size-guide--table-wrap {
+  display: none !important;
+}
+.img-responsive {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.iznik-two-images {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+@media (min-width: 980px) {
+  .iznik-collection-banner img {
+    height: 865px;
+  }
+}
+@media (max-width: 979px) {
+  .iznik-collection-banner img {
+    height: 400px;
+  }
+}
+
+.iznik-pret
+  .iznit-product-app-block
+  + div
+  .radio-size-options:not(.pret-sizechart) {
+  display: block !important;
+}
+.iznik-pret .iznit-product-app-block + div .hdr-custom-size-opt {
+  display: none !important;
+}
+.product-block[data-dynamic-variants-enabled]:has(
+    .bg_css_unstitched input:checked
+  )
+  + .iznit-product-app-block
+  + .product-block
+  .product-block
+  #add-on
+  .cstm-size-diagram-container,
+.product-single__meta:has(.variant__label.iznik-Size)
+  .iznit-product-app-block
+  + div
+  .hdr-custom-size-opt,
+.product-single__meta:has(.variant__label.iznik-Size)
+  .iznit-product-app-block
+  + div
+  .line-item-property__field,
+div[data-product-blocks]:has(
+    .product-block .iznik-Type .bg_css_unstitched input:checked
+  )
+  #infiniteoptions-container
+  > div[role="group"],
+.product-block[data-dynamic-variants-enabled]:has(
+    .bg_css_unstitched input:checked
+  )
+  + .iznit-product-app-block
+  #infiniteoptions-container
+  > div[role="group"],
+.product-block[data-dynamic-variants-enabled]:has(
+    .bg_css_unstitched input:checked
+  )
+  + .iznit-product-app-block
+  + .product-block
+  .product-block
+  .radio-size-options {
+  display: none !important;
+}
+
+.custom_size_option_addon {
+  display: none;
+}
+
+.product-single__form:has(#Custom-Size:checked) .custom_size_option_addon {
+  display: block !important;
+}
+
+.page-content--product:not(
+    .iznik-pret
+  ).product-block[data-dynamic-variants-enabled]:has(
+    .variant-input:not(.bg_css_unstitched) input:checked
+  )
+  + .iznit-product-app-block
+  + .product-block
+  .radio-size-options,
+.page-content--product:not(.iznik-pret)
+  .product-block[data-dynamic-variants-enabled]:has(
+    .variant-input:not(.bg_css_unstitched) input:checked
+  )
+  + .iznit-product-app-block
+  + .product-block
+  .hdr-custom-size-opt {
+  display: flex !important;
+}
+.product-block[data-dynamic-variants-enabled]:has(
+    .variant-input:not(.bg_css_unstitched) input:checked
+  )
+  + .iznit-product-app-block
+  + .product-block
+  .product-block:has(#Custom-Size:checked)
+  #add-on
+  .cstm-size-diagram-container {
+  display: block !important;
+}
+@media (max-width: 767px) {
+  .product-block[data-dynamic-variants-enabled]:has(
+      .variant-input:not(.bg_css_unstitched) input:checked
+    )
+    + .iznit-product-app-block
+    + .product-block
+    .radio-size-options,
+  .product-block[data-dynamic-variants-enabled]:has(
+      .variant-input:not(.bg_css_unstitched) input:checked
+    )
+    + .iznit-product-app-block
+    + .product-block
+    .hdr-custom-size-opt {
+    justify-content: center;
+  }
+  .iznik-two-images {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .note-variant {
+    display: block;
+    position: relative;
+  }
+}
+
+.note-variant {
+    font-size: 13px;
+    font-weight: 700;
+    position: relative;
+    left: -5px;
+    top: 15px;
+}
+.variant-wrapper.js {
+    height: 135px !important;
+}
+.line-item-property__field.radio-size-options.hhz {
+    max-height: 50px !important;
+    overflow: hidden;
+    position: relative;
+    top: 5px;
+    padding-top: 1rem;
+}
+.product-single__meta:has(
+    .product-block[data-dynamic-variants-enabled]
+      .variant-input-wrap
+      .variant-input[data-value^="Stitched"]
+      input:checked
+  )
+  .iznit-product-app-block
+  #infiniteoptions-container
+  .yard,
+.product-single__meta:has(
+    .product-block[data-dynamic-variants-enabled]
+      .variant-input-wrap
+      .variant-input[data-value^="Unstitched"]
+      input:checked
+  )
+  .iznit-product-app-block
+  #infiniteoptions-container
+  > div:first-of-type {
+  display: none !important;
+}
+.product-single__meta:has(
+    .product-block[data-dynamic-variants-enabled]
+      .variant-input-wrap
+      .variant-input[data-value^="Stitched"]
+      input:checked
+  )
+  .iznit-product-app-block
+  #infiniteoptions-container
+  > div:first-of-type,
+.product-single__meta:has(
+    .product-block[data-dynamic-variants-enabled]
+      .variant-input-wrap
+      .variant-input[data-value^="Unstitched"]
+      input:checked
+  )
+  .iznit-product-app-block
+  #infiniteoptions-container
+  .yard {
+  display: block !important;
+}
+
+.product-single__meta:has(
+    .product-block[data-dynamic-variants-enabled]
+      .variant-input-wrap
+      .variant-input[data-value^="Stitched"]
+      input:checked)
+  .product-block
+  .product-block
+  .radio-size-options {
+  display: flex !important;
+}
+
+.iznik-ready-2-ship .ew-size-chart-block,
+.iznik-pret .ew-size-chart-block,
+.product-single__meta:has(.product-block[data-dynamic-variants-enabled] .variant-input-wrap .variant-input[data-value^=Stitched] input:checked) .ew-size-chart-block {
+  display: block;
+}
+
+.product-single__meta:has(.product-block[data-dynamic-variants-enabled] .variant-input-wrap .variant-input[data-value^="Unstitched"] input:checked) .iznik-full-sleeves-lining,
+.product-single__meta:has(.product-block[data-dynamic-variants-enabled] .variant-input-wrap .variant-input[data-value^="Unstitched"] input:checked) #infiniteoptions-container > div:not([class]),
+.product-single__meta:has(.product-block[data-dynamic-variants-enabled] .variant-input-wrap .variant-input[data-value^="Unstitched"] input:checked) .product-block .product-block .radio-size-options {
+  display: none !important;
+}
+
+.buttons-wrapper shopify-accelerated-checkout{
+display:none;
+}
+#full-description h2{
+  font-weight:bold !important;
+font-size:20px !important;
+}
+
+#full-description{
+      width: 82% !important;
+
+    margin: auto !important;
+}
+
+/* READY TO WEAR COLLECTION DESCRIPTION
+ */
+#description-container {
+text-align:center;  
+  margin-bottom:60px;
+  display: none;
+}
+
+
+@media(max-width:600px){
+.ew-special-text {
+    position: static;
+}
+  .collection-grid__wrapper .grid__item {
+    width:50% !important;
+  }
+  .page-content--product .product-single__sticky{
+    position:relative;
+  }
+}
+
+#SidebarDrawer-1-filter-availability .tag__count,
+#CollectionSidebar-1-filter-availability .tag__count {
+  display:none;
+}
+
+
+
+.tag__count {
+  display:none !important;
+}
