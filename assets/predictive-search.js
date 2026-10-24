@@ -18,10 +18,6 @@ class PredictiveSearch extends SearchForm {
     this.addEventListener('focusout', this.onFocusOut.bind(this));
     this.addEventListener('keyup', this.onKeyup.bind(this));
     this.addEventListener('keydown', this.onKeydown.bind(this));
-
-    this.input.addEventListener('click', () => {
-      if (this.closest('.header__search')?.querySelector(".search-modal__form")) this.open();
-    });
   }
 
   getQuery() {
@@ -37,12 +33,12 @@ class PredictiveSearch extends SearchForm {
       this.querySelector('#predictive-search-results-groups-wrapper')?.remove();
     }
 
+    // Update the term asap, don't wait for the predictive search query to finish loading
     this.updateSearchForTerm(this.searchTerm, newSearchTerm);
 
     this.searchTerm = newSearchTerm;
 
     if (!this.searchTerm.length) {
-      this.renderEmptyState();
       this.close(true);
       return;
     }
@@ -61,46 +57,6 @@ class PredictiveSearch extends SearchForm {
       this.abortController.abort();
       this.abortController = new AbortController();
       this.closeResults(true);
-      this.renderEmptyState();
-    }
-  }
-
-  async renderEmptyState() {
-    try {
-      const emptySectionId = 'predictive-search-empty';
-      const url = new URL(window.location.href);
-      url.searchParams.delete('page');
-      url.searchParams.set('section_id', emptySectionId);
-      url.searchParams.sort();
-
-      const response = await fetch(`${url.toString()}`, {
-        signal: this.abortController.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const text = await response.text();
-
-      const parsedEmptySectionMarkup = new DOMParser()
-        .parseFromString(text, 'text/html')
-        .querySelector('#shopify-section-predictive-search-empty');
-
-      if (parsedEmptySectionMarkup) {
-        const emptyStateContent = parsedEmptySectionMarkup.querySelector('#predictive-search-results');
-
-        if (emptyStateContent) {
-          this.predictiveSearchResults.innerHTML = emptyStateContent.innerHTML;
-          this.setAttribute('results', true);
-          this.open();
-        }
-      }
-    } catch (error) {
-      if (error?.code === 20) {
-        return;
-      }
-      console.error('Error rendering empty state:', error);
     }
   }
 
@@ -147,24 +103,16 @@ class PredictiveSearch extends SearchForm {
     if (event.code === 'ArrowUp' || event.code === 'ArrowDown') {
       event.preventDefault();
     }
-
-    // Init predictive search tabs component
-    const tabsComponent = this.querySelector('tabs-component');
-    if(tabsComponent) {
-      tabsComponent.init();
-      // this.predictiveSearchResults.style.maxHeight = this.resultsMaxHeight || `${this.getResultsMaxHeight()}px`;
-    };
-
   }
 
   updateSearchForTerm(previousTerm, newTerm) {
     const searchForTextElement = this.querySelector('[data-predictive-search-search-for-text]');
     const currentButtonText = searchForTextElement?.innerText;
     if (currentButtonText) {
-      // if (currentButtonText.match(new RegExp(previousTerm, 'g')).length > 1) {
-      //   // The new term matches part of the button text and not just the search term, do not replace to avoid mistakes
-      //   return;
-      // }
+      if (currentButtonText.match(new RegExp(previousTerm, 'g')).length > 1) {
+        // The new term matches part of the button text and not just the search term, do not replace to avoid mistakes
+        return;
+      }
       const newButtonText = currentButtonText.replace(previousTerm, newTerm);
       searchForTextElement.innerText = newButtonText;
     }
@@ -228,7 +176,7 @@ class PredictiveSearch extends SearchForm {
       return;
     }
 
-    fetch(`${routes.predictive_search_url}?q=${searchTerm}&resources[limit_scope]=each&section_id=predictive-search`, {
+    fetch(`${routes.predictive_search_url}?q=${encodeURIComponent(searchTerm)}&section_id=predictive-search`, {
       signal: this.abortController.signal,
     })
       .then((response) => {
@@ -292,8 +240,7 @@ class PredictiveSearch extends SearchForm {
 
   getResultsMaxHeight() {
     this.resultsMaxHeight =
-      window.innerHeight - document.querySelector('.header-section').getBoundingClientRect().bottom;
-
+      window.innerHeight - document.querySelector('.section-header')?.getBoundingClientRect().bottom;
     return this.resultsMaxHeight;
   }
 
@@ -326,4 +273,5 @@ class PredictiveSearch extends SearchForm {
     this.predictiveSearchResults.removeAttribute('style');
   }
 }
-if (!customElements.get('predictive-search')) customElements.define('predictive-search', PredictiveSearch);
+
+customElements.define('predictive-search', PredictiveSearch);

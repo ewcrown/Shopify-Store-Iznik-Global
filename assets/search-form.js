@@ -8,7 +8,7 @@ class SearchForm extends HTMLElement {
       this.input.form.addEventListener('reset', this.onFormReset.bind(this));
       this.input.addEventListener(
         'input',
-        theme.utils.debounce((event) => {
+        debounce((event) => {
           this.onChange(event);
         }, 300).bind(this)
       );
@@ -43,4 +43,5 @@ class SearchForm extends HTMLElement {
     }
   }
 }
-if (!customElements.get('search-form')) customElements.define('search-form', SearchForm);
+
+customElements.define('search-form', SearchForm);

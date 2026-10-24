@@ -6,17 +6,25 @@
   position: absolute;
   min-width: 100%;
   width: 20rem;
-  border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-20));
-}
-
-.list-menu--disclosure.header__submenu-wrapper-grandchild {
-  opacity: var(--opacity-0);
-  visibility: hidden;
-  overflow: hidden;
-  color: var(--color-foreground);
-  background: var(--color-background);
+  border: 1px solid rgba(var(--color-foreground), 0.2);
 }
 
 .list-menu--disclosure:focus {
   outline: none;
+}
+
+.list-menu__item--active {
+  text-decoration: underline;
+  text-underline-offset: 0.3rem;
+}
+
+.list-menu__item--active:hover {
+  text-decoration-thickness: 0.2rem;
+}
+
+.list-menu--disclosure.localization-selector {
+  max-height: 18rem;
+  overflow: auto;
+  width: 10rem;
+  padding: 0.5rem;
 }

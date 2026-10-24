@@ -1,0 +1,760 @@
+{% comment %}
+  Lookbook Grid Section
+  - Desktop: 3 columns
+  - Mobile: 2 columns
+  - Image: 90% of card
+  - Button area: 10% of card
+  - Entire image + button link to selected page/URL
+  - Maximum 100 blocks
+{% endcomment %}
+
+<section
+  id="Lookbook-{{ section.id }}"
+  class="lookbook-section"
+  style="
+    --lookbook-max-width: {{ section.settings.max_width }}px;
+    --lookbook-gap: {{ section.settings.grid_gap }}px;
+    --lookbook-mobile-gap: {{ section.settings.mobile_grid_gap }}px;
+    --lookbook-bg: {{ section.settings.background_color }};
+    --lookbook-button-bg: {{ section.settings.button_background }};
+    --lookbook-button-color: {{ section.settings.button_text_color }};
+    --lookbook-image-ratio: {{ section.settings.image_ratio }};
+  "
+>
+  <div class="lookbook-section__inner">
+
+    {% if section.settings.heading != blank %}
+      <div class="lookbook-section__header">
+        <h2 class="lookbook-section__heading">
+          {{ section.settings.heading }}
+        </h2>
+      </div>
+    {% endif %}
+
+    <div class="lookbook-grid">
+      {% for block in section.blocks %}
+        <div
+          class="lookbook-card"
+          {{ block.shopify_attributes }}
+        >
+          {% if block.settings.link != blank %}
+            <a
+              href="{{ block.settings.link }}"
+              class="lookbook-card__image-link"
+              aria-label="{{ block.settings.button_text | default: 'View Catalog' | escape }}"
+            >
+          {% else %}
+            <div class="lookbook-card__image-link">
+          {% endif %}
+
+              <div class="lookbook-card__image-wrapper">
+                {% if block.settings.image != blank %}
+                  {{
+                    block.settings.image
+                    | image_url: width: 1600
+                    | image_tag:
+                      loading: 'lazy',
+                      widths: '300, 400, 500, 600, 800, 1000, 1200, 1600',
+                      sizes: '(max-width: 749px) 50vw, 33vw',
+                      class: 'lookbook-card__image'
+                  }}
+                {% else %}
+                  {{
+                    'image'
+                    | placeholder_svg_tag:
+                      'lookbook-card__placeholder'
+                  }}
+                {% endif %}
+              </div>
+
+          {% if block.settings.link != blank %}
+            </a>
+          {% else %}
+            </div>
+          {% endif %}
+
+          <div class="lookbook-card__footer">
+            {% if block.settings.link != blank %}
+              <a
+                href="{{ block.settings.link }}"
+                class="lookbook-card__button"
+              >
+                {{ block.settings.button_text | default: 'View Catalog' }}
+              </a>
+            {% else %}
+              <span class="lookbook-card__button">
+                {{ block.settings.button_text | default: 'View Catalog' }}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+<style>
+  /* ========================================
+     LOOKBOOK SECTION
+  ======================================== */
+
+  #Lookbook-{{ section.id }} {
+    width: 100%;
+    background: var(--lookbook-bg);
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+
+  #Lookbook-{{ section.id }} * {
+    box-sizing: border-box;
+  }
+
+  #Lookbook-{{ section.id }} .lookbook-section__inner {
+    width: 100%;
+    max-width: var(--lookbook-max-width);
+    margin: 0 auto;
+    padding-left: {{ section.settings.side_padding }}px;
+    padding-right: {{ section.settings.side_padding }}px;
+  }
+
+
+  /* ========================================
+     HEADING
+  ======================================== */
+
+  #Lookbook-{{ section.id }} .lookbook-section__header {
+    text-align: center;
+    margin-bottom: {{ section.settings.heading_spacing }}px;
+  }
+
+  #Lookbook-{{ section.id }} .lookbook-section__heading {
+    margin: 0;
+    font-size: {{ section.settings.heading_size }}px;
+    line-height: 1.2;
+    font-weight: 500;
+  }
+
+
+  /* ========================================
+     GRID
+     Desktop = 3 columns
+  ======================================== */
+
+  #Lookbook-{{ section.id }} .lookbook-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--lookbook-gap);
+  }
+
+
+  /* ========================================
+     CARD
+  ======================================== */
+
+  #Lookbook-{{ section.id }} .lookbook-card {
+    width: 100%;
+    min-width: 0;
+    border: {{ section.settings.border_width }}px solid {{ section.settings.border_color }};
+    background: {{ section.settings.card_background }};
+    overflow: hidden;
+  }
+
+
+  /* ========================================
+     IMAGE - APPROX. 90% OF CARD
+  ======================================== */
+
+  #Lookbook-{{ section.id }} .lookbook-card__image-link {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  #Lookbook-{{ section.id }} .lookbook-card__image-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: var(--lookbook-image-ratio);
+    overflow: hidden;
+    background: #f5f5f5;
+  }
+
+  #Lookbook-{{ section.id }} .lookbook-card__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: {{ section.settings.image_fit }};
+    object-position: center;
+    transition: transform 0.35s ease;
+  }
+
+  #Lookbook-{{ section.id }} .lookbook-card__placeholder {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  {% if section.settings.enable_image_hover %}
+    #Lookbook-{{ section.id }}
+    .lookbook-card__image-link:hover
+    .lookbook-card__image {
+      transform: scale(1.03);
+    }
+  {% endif %}
+
+
+  /* ========================================
+     BOTTOM 10% / BUTTON AREA
+  ======================================== */
+
+  #Lookbook-{{ section.id }} .lookbook-card__footer {
+    width: 100%;
+    min-height: {{ section.settings.footer_height }}px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: {{ section.settings.footer_padding }}px;
+    background: {{ section.settings.card_background }};
+  }
+
+
+  /* ========================================
+     BUTTON
+  ======================================== */
+
+  #Lookbook-{{ section.id }} .lookbook-card__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: {{ section.settings.button_width }}px;
+    min-height: {{ section.settings.button_height }}px;
+
+    padding: 8px 20px;
+
+    background: var(--lookbook-button-bg);
+    color: var(--lookbook-button-color);
+
+    border: {{ section.settings.button_border_width }}px solid {{ section.settings.button_border_color }};
+    border-radius: {{ section.settings.button_radius }}px;
+
+    font-size: {{ section.settings.button_font_size }}px;
+    line-height: 1.2;
+    font-weight: 400;
+
+    text-align: center;
+    text-decoration: none;
+
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease;
+  }
+
+  #Lookbook-{{ section.id }} a.lookbook-card__button:hover {
+    opacity: 0.8;
+  }
+
+
+  /* ========================================
+     TABLET
+  ======================================== */
+
+  @media screen and (max-width: 989px) {
+    #Lookbook-{{ section.id }} .lookbook-section__inner {
+      padding-left: {{ section.settings.tablet_side_padding }}px;
+      padding-right: {{ section.settings.tablet_side_padding }}px;
+    }
+  }
+
+
+  /* ========================================
+     MOBILE
+     Exactly 2 columns
+  ======================================== */
+
+  @media screen and (max-width: 749px) {
+
+    #Lookbook-{{ section.id }} {
+      padding-top: {{ section.settings.mobile_padding_top }}px;
+      padding-bottom: {{ section.settings.mobile_padding_bottom }}px;
+    }
+
+    #Lookbook-{{ section.id }} .lookbook-section__inner {
+      padding-left: {{ section.settings.mobile_side_padding }}px;
+      padding-right: {{ section.settings.mobile_side_padding }}px;
+    }
+
+    #Lookbook-{{ section.id }} .lookbook-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--lookbook-mobile-gap);
+    }
+
+    #Lookbook-{{ section.id }} .lookbook-section__heading {
+      font-size: {{ section.settings.mobile_heading_size }}px;
+    }
+
+    #Lookbook-{{ section.id }} .lookbook-section__header {
+      margin-bottom: {{ section.settings.mobile_heading_spacing }}px;
+    }
+
+    #Lookbook-{{ section.id }} .lookbook-card__footer {
+      min-height: {{ section.settings.mobile_footer_height }}px;
+      padding: {{ section.settings.mobile_footer_padding }}px;
+    }
+
+    #Lookbook-{{ section.id }} .lookbook-card__button {
+      min-width: 0;
+      width: {{ section.settings.mobile_button_width }}%;
+      min-height: {{ section.settings.mobile_button_height }}px;
+
+      padding: 6px 8px;
+
+      font-size: {{ section.settings.mobile_button_font_size }}px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Lookbook grid",
+  "tag": "section",
+  "class": "section-lookbook-grid",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Lookbook"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 16,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "mobile_heading_size",
+      "min": 14,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile heading size",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "heading_spacing",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Space below heading",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "mobile_heading_spacing",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Mobile space below heading",
+      "default": 20
+    },
+
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "min": 1000,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "label": "Maximum section width",
+      "default": 1400
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Desktop grid gap",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "mobile_grid_gap",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile grid gap",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "side_padding",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Desktop side padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "tablet_side_padding",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Tablet side padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "mobile_side_padding",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile side padding",
+      "default": 10
+    },
+
+    {
+      "type": "header",
+      "content": "Card & image"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "default": "3 / 4",
+      "options": [
+        {
+          "value": "1 / 1",
+          "label": "Square"
+        },
+        {
+          "value": "4 / 5",
+          "label": "Portrait 4:5"
+        },
+        {
+          "value": "3 / 4",
+          "label": "Portrait 3:4"
+        },
+        {
+          "value": "2 / 3",
+          "label": "Tall 2:3"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "default": "cover",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_image_hover",
+      "label": "Enable image hover zoom",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "unit": "px",
+      "label": "Card border width",
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Card border color",
+      "default": "#e5e5e5"
+    },
+
+    {
+      "type": "header",
+      "content": "Button area"
+    },
+    {
+      "type": "range",
+      "id": "footer_height",
+      "min": 50,
+      "max": 160,
+      "step": 5,
+      "unit": "px",
+      "label": "Desktop button area height",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "footer_padding",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Desktop button area padding",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "mobile_footer_height",
+      "min": 35,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Mobile button area height",
+      "default": 55
+    },
+    {
+      "type": "range",
+      "id": "mobile_footer_padding",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile button area padding",
+      "default": 6
+    },
+
+    {
+      "type": "header",
+      "content": "Button style"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Button border",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "button_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Button border width",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_width",
+      "min": 80,
+      "max": 300,
+      "step": 10,
+      "unit": "px",
+      "label": "Desktop button width",
+      "default": 140
+    },
+    {
+      "type": "range",
+      "id": "button_height",
+      "min": 30,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Desktop button height",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "button_font_size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Desktop button text size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Button corner radius",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "mobile_button_width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Mobile button width",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "mobile_button_height",
+      "min": 25,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile button height",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "mobile_button_font_size",
+      "min": 8,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile button text size",
+      "default": 11
+    },
+
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Desktop top padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Desktop bottom padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_top",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Mobile top padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_bottom",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Mobile bottom padding",
+      "default": 20
+    }
+  ],
+
+  "blocks": [
+    {
+      "type": "lookbook",
+      "name": "Lookbook",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Catalog image"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "default": "View Catalog"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Catalog link"
+        }
+      ]
+    }
+  ],
+
+  "presets": [
+    {
+      "name": "Lookbook grid",
+      "blocks": [
+        {
+          "type": "lookbook"
+        },
+        {
+          "type": "lookbook"
+        },
+        {
+          "type": "lookbook"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

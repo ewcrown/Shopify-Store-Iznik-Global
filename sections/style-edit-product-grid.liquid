@@ -1,0 +1,513 @@
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'quick-add.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  .style-edit__header {
+    margin-bottom: 30px;
+    max-width: 500px;
+  }
+
+  .style-edit__title,
+  .rich-text__heading {
+    margin: 0 0 10px;
+    font-size: 24px;
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  .rich-text__heading {
+    margin: 0 0 5px !important;
+  }
+
+  .style-edit__description {
+    margin: 0;
+    font-size: 1.6rem;
+    line-height: 1.5;
+    color: rgba(var(--color-foreground), 0.75);
+  }
+
+  /* --- GRID LOGIC --- */
+  .style-edit__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 35px;
+  }
+
+  /* Mobile Scroll Styling */
+  @media screen and (max-width: 749px) {
+    .style-edit__grid {
+      flex-wrap: nowrap !important;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      gap: 15px;
+      margin: 0;
+      padding: 0;
+      scrollbar-width: none;
+    }
+
+    .style-edit__grid::-webkit-scrollbar {
+      display: none;
+    }
+
+    .style-edit__item {
+      flex: 0 0 80%;
+      scroll-snap-align: start;
+    }
+
+    .style-edit__title,
+    .rich-text__heading {
+      font-size: 20px;
+    }
+  }
+
+  /* Desktop Grid Styling */
+  @media screen and (min-width: 990px) {
+    .style-edit__item {
+      flex: 1 1 calc(25% - 35px);
+    }
+  }
+
+  .style-edit__item {
+    position: relative;
+    display: block;
+  }
+
+  .style-edit__link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+    width: 100%;
+  }
+
+  .style-edit__image-wrapper {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    background-color: rgba(var(--color-foreground), 0.04);
+  }
+
+  .style-edit__image-wrapper img,
+  .style-edit__image-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease, opacity 0.4s ease;
+  }
+
+  .style-edit__hover-video,
+  .style-edit__hover-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .style-edit__item:hover .style-edit__hover-video,
+  .style-edit__item:hover .style-edit__hover-image {
+    opacity: 1;
+  }
+
+  .style-edit__item:hover .style-edit__primary-image {
+    transform: scale(1.05);
+  }
+
+  /* Plus Quick View Button Positioning */
+  .style-edit__image-wrapper .quick-add {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 3;
+  }
+
+  .style-edit__image-wrapper .quick-add__submit--image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: rgba(255, 255, 255, 0.7);
+    color: #000000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+
+  .style-edit__image-wrapper .quick-add__submit--image:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.95);
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
+  <div class="page-width">
+  <div class="style-edit__header">
+    {%- if section.settings.title != blank -%}
+      <h2 class="style-edit__title">{{ section.settings.title }}</h2>
+    {%- endif -%}
+    {%- if section.settings.description != blank -%}
+      <p class="style-edit__description">{{ section.settings.description }}</p>
+    {%- endif -%}
+  </div>
+
+  <div class="style-edit__grid">
+    {%- if section.blocks.size > 0 -%}
+      {%- for block in section.blocks -%}
+        {%- assign card_product = block.settings.product -%}
+        {%- assign custom_image = block.settings.custom_image -%}
+        {%- assign custom_video = block.settings.video -%}
+        {%- assign item_id = block.id -%}
+
+        {%- if card_product != blank -%}
+          <style-edit-item class="style-edit__item" {{ block.shopify_attributes }}>
+            <div class="style-edit__image-wrapper">
+              <a href="{{ card_product.url }}" class="style-edit__link" aria-label="{{ card_product.title | escape }}">
+                {%- assign featured_image = custom_image | default: card_product.featured_media -%}
+                {%- if featured_image != blank -%}
+                  {{ featured_image | image_url: width: 1000 | image_tag: loading: 'lazy', class: 'style-edit__primary-image' }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg style-edit__primary-image' }}
+                {%- endif -%}
+
+                {%- if custom_video != blank -%}
+                  {{ custom_video | video_tag: image_size: '1000x', autoplay: false, loop: true, controls: false, muted: true, playsinline: true, class: 'style-edit__hover-video' }}
+                {%- else -%}
+                  {%- assign video_media = card_product.media | where: 'media_type', 'video' | first -%}
+                  {%- if video_media == nil -%}
+                    {%- assign video_media = card_product.media | where: 'media_type', 'external_video' | first -%}
+                  {%- endif -%}
+
+                  {%- if video_media -%}
+                    {%- if video_media.media_type == 'video' -%}
+                      {{ video_media | video_tag: image_size: '1000x', autoplay: false, loop: true, controls: false, muted: true, playsinline: true, class: 'style-edit__hover-video' }}
+                    {%- elsif video_media.media_type == 'external_video' -%}
+                      {%- if video_media.host == 'youtube' -%}
+                        {{ video_media | external_video_url: autoplay: false, loop: true, playlist: video_media.external_id, muted: true, controls: false | external_video_tag: class: 'style-edit__hover-video js-youtube' }}
+                      {%- else -%}
+                        {{ video_media | external_video_url: autoplay: false, loop: true, muted: true, controls: false | external_video_tag: class: 'style-edit__hover-video js-vimeo' }}
+                      {%- endif -%}
+                    {%- endif -%}
+                  {%- elsif card_product.media[1] != nil -%}
+                    {{ card_product.media[1] | image_url: width: 1000 | image_tag: loading: 'lazy', class: 'style-edit__hover-image' }}
+                  {%- endif -%}
+                {%- endif -%}
+              </a>
+
+              {%- assign product_form_id = 'quick-add-' | append: section.id | append: '-' | append: item_id -%}
+              <div class="quick-add quick-add--image no-js-hidden">
+                <modal-opener data-modal="#QuickAdd-{{ section.id }}-{{ item_id }}">
+                  <button
+                    id="{{ product_form_id }}-submit"
+                    type="button"
+                    class="quick-add__submit quick-add__submit--image"
+                    aria-haspopup="dialog"
+                    aria-label="{{ 'products.product.choose_product_options' | t: product_name: card_product.title | escape }}"
+                    data-product-url="{{ card_product.url }}"
+                  >
+                    <span aria-hidden="true">+</span>
+                    {%- render 'loading-spinner' -%}
+                  </button>
+                </modal-opener>
+              </div>
+            </div>
+
+            <quick-add-modal id="QuickAdd-{{ section.id }}-{{ item_id }}" class="quick-add-modal">
+              <div
+                role="dialog"
+                aria-label="{{ 'products.product.choose_product_options' | t: product_name: card_product.title | escape }}"
+                aria-modal="true"
+                class="quick-add-modal__content global-settings-popup"
+                tabindex="-1"
+              >
+                <button
+                  id="ModalClose-{{ section.id }}-{{ item_id }}"
+                  type="button"
+                  class="quick-add-modal__toggle"
+                  aria-label="{{ 'accessibility.close' | t }}"
+                >
+                  {{- 'icon-close.svg' | inline_asset_content -}}
+                </button>
+                <div id="QuickAddInfo-{{ section.id }}-{{ item_id }}" class="quick-add-modal__content-info"></div>
+              </div>
+            </quick-add-modal>
+          </style-edit-item>
+        {%- elsif block.type == 'image_block' -%}
+          <div class="style-edit__item" {{ block.shopify_attributes }}>
+            {%- if block.settings.link != blank -%}
+              <a href="{{ block.settings.link }}" class="style-edit__link">
+            {%- endif -%}
+
+            <div class="style-edit__image-wrapper">
+              {%- if block.settings.image != blank -%}
+                {{ block.settings.image | image_url: width: 1000 | image_tag: loading: 'lazy', class: 'style-edit__primary-image' }}
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg style-edit__primary-image' }}
+              {%- endif -%}
+            </div>
+
+            {%- if block.settings.link != blank -%}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    {%- elsif section.settings.collection != blank and section.settings.collection.products.size > 0 -%}
+      {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+        {%- assign card_product = product -%}
+        {%- assign item_id = product.id -%}
+        <style-edit-item class="style-edit__item">
+          <div class="style-edit__image-wrapper">
+            <a href="{{ card_product.url }}" class="style-edit__link" aria-label="{{ card_product.title | escape }}">
+              {%- if card_product.featured_media != blank -%}
+                {{ card_product.featured_media | image_url: width: 1000 | image_tag: loading: 'lazy', class: 'style-edit__primary-image' }}
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg style-edit__primary-image' }}
+              {%- endif -%}
+
+              {%- assign video_media = card_product.media | where: 'media_type', 'video' | first -%}
+              {%- if video_media == nil -%}
+                {%- assign video_media = card_product.media | where: 'media_type', 'external_video' | first -%}
+              {%- endif -%}
+
+              {%- if video_media -%}
+                {%- if video_media.media_type == 'video' -%}
+                  {{ video_media | video_tag: image_size: '1000x', autoplay: false, loop: true, controls: false, muted: true, playsinline: true, class: 'style-edit__hover-video' }}
+                {%- elsif video_media.media_type == 'external_video' -%}
+                  {%- if video_media.host == 'youtube' -%}
+                    {{ video_media | external_video_url: autoplay: false, loop: true, playlist: video_media.external_id, muted: true, controls: false | external_video_tag: class: 'style-edit__hover-video js-youtube' }}
+                  {%- else -%}
+                    {{ video_media | external_video_url: autoplay: false, loop: true, muted: true, controls: false | external_video_tag: class: 'style-edit__hover-video js-vimeo' }}
+                  {%- endif -%}
+                {%- endif -%}
+              {%- elsif card_product.media[1] != nil -%}
+                {{ card_product.media[1] | image_url: width: 1000 | image_tag: loading: 'lazy', class: 'style-edit__hover-image' }}
+              {%- endif -%}
+            </a>
+
+            {%- assign product_form_id = 'quick-add-' | append: section.id | append: '-' | append: item_id -%}
+            <div class="quick-add quick-add--image no-js-hidden">
+              <modal-opener data-modal="#QuickAdd-{{ section.id }}-{{ item_id }}">
+                <button
+                  id="{{ product_form_id }}-submit"
+                  type="button"
+                  class="quick-add__submit quick-add__submit--image"
+                  aria-haspopup="dialog"
+                  aria-label="{{ 'products.product.choose_product_options' | t: product_name: card_product.title | escape }}"
+                  data-product-url="{{ card_product.url }}"
+                >
+                  <span aria-hidden="true">+</span>
+                  {%- render 'loading-spinner' -%}
+                </button>
+              </modal-opener>
+            </div>
+          </div>
+
+          <quick-add-modal id="QuickAdd-{{ section.id }}-{{ item_id }}" class="quick-add-modal">
+            <div
+              role="dialog"
+              aria-label="{{ 'products.product.choose_product_options' | t: product_name: card_product.title | escape }}"
+              aria-modal="true"
+              class="quick-add-modal__content global-settings-popup"
+              tabindex="-1"
+            >
+              <button
+                id="ModalClose-{{ section.id }}-{{ item_id }}"
+                type="button"
+                class="quick-add-modal__toggle"
+                aria-label="{{ 'accessibility.close' | t }}"
+              >
+                {{- 'icon-close.svg' | inline_asset_content -}}
+              </button>
+              <div id="QuickAddInfo-{{ section.id }}-{{ item_id }}" class="quick-add-modal__content-info"></div>
+            </div>
+          </quick-add-modal>
+        </style-edit-item>
+      {%- endfor -%}
+    {%- else -%}
+      {%- for i in (1..4) -%}
+        <div class="style-edit__item">
+          <div class="style-edit__image-wrapper">
+            {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg style-edit__primary-image' }}
+          </div>
+        </div>
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+</div>
+</div>
+
+<script>
+  if (!customElements.get('style-edit-item')) {
+    customElements.define(
+      'style-edit-item',
+      class StyleEditItem extends HTMLElement {
+        connectedCallback() {
+          const video = this.querySelector('video.style-edit__hover-video');
+          if (!video) return;
+
+          this.addEventListener('mouseenter', () => {
+            video.currentTime = 0;
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(() => {});
+            }
+          });
+
+          this.addEventListener('mouseleave', () => {
+            video.pause();
+          });
+        }
+      }
+    );
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Style Edit Product Grid",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "THE STYLE EDIT"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "From wardrobe essentials to statement pieces and accessories for every occasion, shop your favourites at irresistible prices."
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection (used if no product blocks added)"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4,
+      "label": "Maximum products to show from collection"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top Padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom Padding",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Custom Image (optional override)"
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Custom Hover Video (optional)",
+          "info": "Overrides the product video for this block. If blank, the product video is used."
+        }
+      ]
+    },
+    {
+      "type": "image_block",
+      "name": "Image Block (Legacy)",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link (Target URL)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Style Edit Product Grid",
+      "blocks": [
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" }
+      ]
+    }
+  ]
+}
+{% endschema %}

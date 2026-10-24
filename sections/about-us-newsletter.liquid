@@ -1,0 +1,122 @@
+{%- if request.page_type == 'page' -%}
+  {%- if page.handle == 'about' or page.handle == 'about-us' -%}
+  {{ 'section-about-us-newsletter.css' | asset_url | stylesheet_tag }}
+
+  {% style %}
+    #shopify-section-{{ section.id }} .about-us-newsletter {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+      --about-us-newsletter-heading-size: {{ section.settings.heading_size_desktop }}px;
+      --about-us-newsletter-heading-size-mobile: {{ section.settings.heading_size_mobile }}px;
+    }
+
+    @media screen and (max-width: 749px) {
+      #shopify-section-{{ section.id }} .about-us-newsletter {
+        padding-top: {{ section.settings.padding_top_mobile }}px;
+        padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+      }
+    }
+  {% endstyle %}
+
+  <section class="about-us-newsletter color-{{ section.settings.color_scheme }} gradient">
+    <div class="about-us-newsletter__inner">
+      <h2 class="about-us-newsletter__heading">{{ section.settings.heading | escape }}</h2>
+
+      {% form 'customer', class: 'about-us-newsletter__form' %}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        <div class="about-us-newsletter__field">
+          <input
+            id="AboutUsNewsletter-{{ section.id }}"
+            class="about-us-newsletter__input"
+            type="email"
+            name="contact[email]"
+            value="{{ form.email }}"
+            placeholder=" "
+            autocomplete="email"
+            autocorrect="off"
+            autocapitalize="off"
+            aria-required="true"
+            required
+          >
+          <label class="about-us-newsletter__label" for="AboutUsNewsletter-{{ section.id }}">
+            {{ section.settings.email_label | escape }}
+          </label>
+          <button type="submit" class="about-us-newsletter__submit" aria-label="Subscribe">
+            <span class="svg-wrapper">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
+          </button>
+        </div>
+
+        {%- if form.errors -%}
+          <p class="about-us-newsletter__message" role="alert">{{ form.errors.messages.email }}</p>
+        {%- elsif form.posted_successfully? -%}
+          <p class="about-us-newsletter__message" role="status">{{ section.settings.success_message | escape }}</p>
+        {%- endif -%}
+      {% endform %}
+
+      <ul class="about-us-newsletter__socials" role="list">
+        {%- if section.settings.show_facebook and section.settings.facebook_link != blank -%}
+          <li><a class="about-us-newsletter__social-link" href="{{ section.settings.facebook_link }}" target="_blank" aria-label="Facebook">{{ 'icon-facebook.svg' | inline_asset_content }}</a></li>
+        {%- endif -%}
+        {%- if section.settings.show_instagram and section.settings.instagram_link != blank -%}
+          <li><a class="about-us-newsletter__social-link" href="{{ section.settings.instagram_link }}" target="_blank" aria-label="Instagram">{{ 'icon-instagram.svg' | inline_asset_content }}</a></li>
+        {%- endif -%}
+        {%- if section.settings.show_pinterest and section.settings.pinterest_link != blank -%}
+          <li><a class="about-us-newsletter__social-link" href="{{ section.settings.pinterest_link }}" target="_blank" aria-label="Pinterest">{{ 'icon-pinterest.svg' | inline_asset_content }}</a></li>
+        {%- endif -%}
+        {%- if section.settings.show_youtube and section.settings.youtube_link != blank -%}
+          <li><a class="about-us-newsletter__social-link" href="{{ section.settings.youtube_link }}" target="_blank" aria-label="YouTube">{{ 'icon-youtube.svg' | inline_asset_content }}</a></li>
+        {%- endif -%}
+        {%- if section.settings.show_tiktok and section.settings.tiktok_link != blank -%}
+          <li><a class="about-us-newsletter__social-link" href="{{ section.settings.tiktok_link }}" target="_blank" aria-label="TikTok">{{ 'icon-tiktok.svg' | inline_asset_content }}</a></li>
+        {%- endif -%}
+        {%- if section.settings.show_whatsapp and section.settings.whatsapp_link != blank -%}
+          <li>
+            <a class="about-us-newsletter__social-link" href="{{ section.settings.whatsapp_link }}" target="_blank" aria-label="WhatsApp">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.52 3.48A11.82 11.82 0 0 0 12.04 0C5.47 0 .12 5.35.12 11.92c0 2.1.55 4.15 1.6 5.97L0 24l6.28-1.65a11.9 11.9 0 0 0 5.76 1.47h.01c6.57 0 11.92-5.35 11.92-11.92 0-3.18-1.24-6.17-3.45-8.42ZM12.05 21.8h-.01a9.9 9.9 0 0 1-5.04-1.38l-.36-.21-3.73.98 1-3.64-.24-.38a9.88 9.88 0 0 1-1.52-5.25c0-5.47 4.45-9.92 9.92-9.92 2.65 0 5.14 1.03 7.01 2.91a9.84 9.84 0 0 1 2.91 7c0 5.47-4.45 9.92-9.94 9.92Zm5.44-7.43c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.08-.3-.15-1.28-.47-2.43-1.5-.9-.8-1.5-1.8-1.68-2.1-.18-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.08-.8.38-.27.3-1.05 1.03-1.05 2.52s1.08 2.93 1.23 3.13c.15.2 2.12 3.24 5.13 4.54.72.31 1.28.5 1.72.64.72.23 1.37.2 1.89.12.58-.09 1.77-.72 2.02-1.42.25-.69.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35Z"/></svg>
+            </a>
+          </li>
+        {%- endif -%}
+        {%- if section.settings.show_vimeo and section.settings.vimeo_link != blank -%}
+          <li><a class="about-us-newsletter__social-link" href="{{ section.settings.vimeo_link }}" target="_blank" aria-label="Vimeo">{{ 'icon-vimeo.svg' | inline_asset_content }}</a></li>
+        {%- endif -%}
+      </ul>
+    </div>
+  </section>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "About Us Newsletter",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {"type": "text", "id": "heading", "label": "Heading", "default": "GET THE LATEST TRENDS FIRST"},
+    {"type": "text", "id": "email_label", "label": "Email label", "default": "ENTER YOUR EMAIL"},
+    {"type": "text", "id": "success_message", "label": "Success message", "default": "Thanks for subscribing!"},
+    {"type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1"},
+    {"type": "range", "id": "heading_size_desktop", "label": "Heading font size (desktop)", "min": 12, "max": 60, "step": 1, "unit": "px", "default": 24},
+    {"type": "range", "id": "heading_size_mobile", "label": "Heading font size (mobile)", "min": 12, "max": 40, "step": 1, "unit": "px", "default": 20},
+    {"type": "range", "id": "padding_top", "label": "Padding top (desktop)", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 48},
+    {"type": "range", "id": "padding_bottom", "label": "Padding bottom (desktop)", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 48},
+    {"type": "range", "id": "padding_top_mobile", "label": "Padding top (mobile)", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 32},
+    {"type": "range", "id": "padding_bottom_mobile", "label": "Padding bottom (mobile)", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 32},
+    {"type": "header", "content": "Social links"},
+    {"type": "url", "id": "facebook_link", "label": "Facebook URL"},
+    {"type": "checkbox", "id": "show_facebook", "label": "Show Facebook link", "default": true},
+    {"type": "url", "id": "instagram_link", "label": "Instagram URL"},
+    {"type": "checkbox", "id": "show_instagram", "label": "Show Instagram link", "default": true},
+    {"type": "url", "id": "pinterest_link", "label": "Pinterest URL"},
+    {"type": "checkbox", "id": "show_pinterest", "label": "Show Pinterest link", "default": true},
+    {"type": "url", "id": "youtube_link", "label": "YouTube URL"},
+    {"type": "checkbox", "id": "show_youtube", "label": "Show YouTube link", "default": true},
+    {"type": "url", "id": "tiktok_link", "label": "TikTok URL"},
+    {"type": "checkbox", "id": "show_tiktok", "label": "Show TikTok link", "default": true},
+    {"type": "url", "id": "whatsapp_link", "label": "WhatsApp URL"},
+    {"type": "checkbox", "id": "show_whatsapp", "label": "Show WhatsApp link", "default": true},
+    {"type": "url", "id": "vimeo_link", "label": "Vimeo URL"},
+    {"type": "checkbox", "id": "show_vimeo", "label": "Show Vimeo link", "default": true}
+  ],
+  "presets": [{"name": "About Us Newsletter"}]
+}
+{% endschema %}

@@ -5,70 +5,237 @@
   {% render 'header-mega-menu' %}
 {% endcomment %}
 
-<header-menu class="{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-  <details id="Details-HeaderMenu-{{ forloopIndex }}" class="details--dropdown mega-menu" is="dropdown-details" activate-event="hover" check-shopify-design-mode {{ block.shopify_attributes }}>
-    <summary
-      id="HeaderMenu-{{ link.handle }}"
-      class="details__summary list-menu__item menu__link--level-1 header__menu-item list-menu__item link focus-inset link--hover-underline"
-      {%- if link.links != blank -%}
-        aria-controls="submenu-{{ forloop.index }}"
-        aria-haspopup="true"
-        aria-expanded="false"
-      {%- endif -%}
-    >
-      <span
-        {%- if link.child_active %}
-          class="header__active-menu-item"
-        {% endif %}
-      >
-        {{- link.title | escape -}}
-      </span>
-      <span class="svg-wrapper">
-        {{- 'icon-caret.svg' | inline_asset_content -}}
-      </span>
-    </summary>
-    <div
-      id="MegaMenu-Content-{{ forloopIndex }}"
-      class="details__list list-menu--wrapper mega-menu__content z-1 color-{{ section.settings.menu_color_scheme }} motion-reduce global-settings-popup"
-      tabindex="-1"
-    >
-      <ul
-        class="mega-menu__list header__mega-submenu page-width{% if link.levels == 1 %} mega-menu__list--condensed{% endif %}"
-        role="list"
-      >
-        {%- for childlink in link.links -%}
-          <li>
-            <a
-              id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
-              href="{{ childlink.url }}"
-              class="header__menu-item mega-menu__link mega-menu__link--level-2 link{% if childlink.current %} list-menu__item--active{% endif %}"
-              {% if childlink.current %}
-                aria-current="page"
+{% comment %} <nav class="header__inline-menu">
+  <ul class="list-menu list-menu--inline" role="list">
+    {%- for link in section.settings.menu.links -%}
+      <li>
+        {%- if link.links != blank -%}
+          <header-menu>
+            <details id="Details-HeaderMenu-{{ forloop.index }}" class="mega-menu">
+              <summary
+                id="HeaderMenu-{{ link.handle }}"
+                class="header__menu-item list-menu__item link focus-inset"
+              >
+                <span
+                  {%- if link.child_active %}
+                    class="header__active-menu-item"
+                  {% endif %}
+                >
+                  {{- link.title | escape -}}
+                </span>
+                {{- 'icon-caret.svg' | inline_asset_content -}}
+              </summary>
+              <div
+                id="MegaMenu-Content-{{ forloop.index }}"
+                class="mega-menu__content color-{{ section.settings.menu_color_scheme }} gradient motion-reduce global-settings-popup"
+                tabindex="-1"
+              >
+                <ul
+                  class="mega-menu__list page-width{% if link.levels == 1 %} mega-menu__list--condensed{% endif %}"
+                  role="list"
+                >
+                  {%- for childlink in link.links -%}
+                    <li>
+                      <a
+                        id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
+                        href="{{ childlink.url }}"
+                        class="mega-menu__link mega-menu__link--level-2 link{% if childlink.current %} mega-menu__link--active{% endif %}"
+                        {% if childlink.current %}
+                          aria-current="page"
+                        {% endif %}
+                      >
+                        {{ childlink.title | escape }}
+                      </a>
+                      {%- if childlink.links != blank -%}
+                        <ul class="list-unstyled" role="list">
+                          {%- for grandchildlink in childlink.links -%}
+                            <li>
+                              <a
+                                id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
+                                href="{{ grandchildlink.url }}"
+                                class="mega-menu__link link{% if grandchildlink.current %} mega-menu__link--active{% endif %}"
+                                {% if grandchildlink.current %}
+                                  aria-current="page"
+                                {% endif %}
+                              >
+                                {{ grandchildlink.title | escape }}
+                              </a>
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            </details>
+          </header-menu>
+        {%- else -%}
+          <a
+            id="HeaderMenu-{{ link.handle }}"
+            href="{{ link.url }}"
+            class="header__menu-item list-menu__item link link--text focus-inset"
+            {% if link.current %}
+              aria-current="page"
+            {% endif %}
+          >
+            <span
+              {%- if link.current %}
+                class="header__active-menu-item"
               {% endif %}
             >
-              {{ childlink.title | escape }}
-            </a>
-            {%- if childlink.links != blank -%}
-              <ul class="list-unstyled" role="list">
-                {%- for grandchildlink in childlink.links -%}
-                  <li>
-                    <a
-                      id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
-                      href="{{ grandchildlink.url }}"
-                      class="header__menu-item mega-menu__link link link--hover-underline mega-menu__link--level-3{% if grandchildlink.current %} list-menu__item--active{% endif %}"
-                      {% if grandchildlink.current %}
-                        aria-current="page"
-                      {% endif %}
-                    >
-                      {{ grandchildlink.title | escape }}
-                    </a>
-                  </li>
-                {%- endfor -%}
-              </ul>
-            {%- endif -%}
-          </li>
-        {%- endfor -%}
-      </ul>
-    </div>
-  </details>
-</header-menu>
+              {{- link.title | escape -}}
+            </span>
+          </a>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+</nav> {% endcomment %}
+
+
+<nav class="header__inline-menu luxury-hamburger-menu page-width">
+  <header-menu>
+    <details id="Details-HeaderMegaMenu-Global" class="mega-menu">
+      <summary class="header__icon header__icon--menu header__icon--summary link focus-inset">
+        <span class="custom-close-icon">
+          {{- 'icon-hamburger.svg' | inline_asset_content -}}
+          {{- 'icon-close.svg' | inline_asset_content -}}
+        </span>
+      </summary>
+      
+      <div id="MegaMenu-Content-Global" class="mega-menu__content color-{{ section.settings.menu_color_scheme }} gradient motion-reduce global-settings-popup" tabindex="-1">
+        <ul class="mega-menu__list page-width" role="list">
+          
+          {%- for link in section.settings.menu.links -%}
+            <li class="mega-menu__column">
+              {%- comment -%} LEVEL 1 HEADING (VELVET, WINTER, etc.) {%- endcomment -%}
+              <a href="{{ link.url }}" class="mega-menu__link mega-menu__link--level-2 link">
+                {{ link.title }}
+              </a>
+
+              {%- if link.links != blank -%}
+                <ul class="list-unstyled" role="list">
+                  {%- for childlink in link.links -%}
+                    <li>
+                      {%- comment -%} LEVEL 2 LINKS {%- endcomment -%}
+                      <a href="{{ childlink.url }}" class="mega-menu__link link level-3-link">
+                        {{ childlink.title }}
+                      </a>
+                      
+                      {%- if childlink.links != blank -%}
+                        <ul class="list-unstyled grandchild-list" role="list">
+                          {%- for grandchildlink in childlink.links -%}
+                            <li>
+                              <a href="{{ grandchildlink.url }}" class="mega-menu__link link grandchild-link">
+                                {{ grandchildlink.title }}
+                              </a>
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+
+        </ul>
+      </div>
+    </details>
+  </header-menu>
+</nav>
+
+<style>
+  /* --- GLOBAL HAMBURGER MEGA MENU DESKTOP --- */
+
+/* 1. Hide the default summary marker and center the hamburger */
+.luxury-hamburger-menu .mega-menu summary {
+  list-style: none;
+}
+.luxury-hamburger-menu .mega-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+/* 2. Full Width Mega Menu Styling */
+.luxury-hamburger-menu .mega-menu__content {
+  position: absolute;
+  left: 0;
+  width: 100vw;
+  background: #ffffff;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 5rem 0 !important;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-1rem);
+    z-index: 1;
+}
+
+.luxury-hamburger-menu details[open] .mega-menu__content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* 3. The Column Grid (Matches Image 2) */
+.luxury-hamburger-menu .mega-menu__list.page-width {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important; /* Forces 5 Columns */
+  gap: 3rem;
+  align-items: start;
+}
+
+/* 4. Level 2 Headings (VELVET COLLECTION, etc.) */
+.luxury-hamburger-menu .mega-menu__link--level-2 {
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.2rem !important;
+  color: #000 !important;
+  margin-bottom: 2rem !important;
+  display: block;
+}
+
+/* 5. Sub-links (Level 3 and Grandchildren) */
+.luxury-hamburger-menu .level-3-link {
+  font-size: 1.3rem !important;
+  color: #555 !important;
+  text-transform: capitalize;
+  margin-bottom: 0.8rem;
+  display: block;
+}
+
+.luxury-hamburger-menu .grandchild-link {
+  font-size: 1.2rem !important;
+  color: #888 !important;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* 6. Sale Item Styling */
+.luxury-hamburger-menu a[href*="sale"] {
+  color: #ff0000 !important;
+}
+
+/* 7. Toggle Icon logic (X and Hamburger) */
+.luxury-hamburger-menu details[open] .icon-hamburger {
+  display: none;
+}
+.luxury-hamburger-menu details:not([open]) .icon-close {
+  display: none;
+}
+
+.luxury-hamburger-menu .header__icon .icon-close {
+  stroke: unset !important;
+}
+
+/* 8. Fix Logo centering if needed when menu is hamburger only */
+@media screen and (min-width: 990px) {
+  .header--top-center .header__inline-menu {
+    margin-left: 0;
+  }
+}
+</style>

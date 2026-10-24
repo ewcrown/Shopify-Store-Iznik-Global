@@ -4,110 +4,100 @@
   Usage:
   {% render 'header-dropdown-menu' %}
 {% endcomment %}
-{%- liquid
-  assign section_fetch = false
-  if section.index == null
-    assign section_fetch = true
-  endif
--%}
-{%- unless section_fetch -%}
-  <div
-    class="header__submenu-wrapper list-menu--wrapper cus-scrollbar"
-    tabindex="-1"
-    id="MegaMenu-Content-{{ section.id }}-{{ forloopIndex }}-{{ block_id }}"
-  ></div>
-{%- else -%}
-  <div
-    class="header__submenu-wrapper list-menu--wrapper cus-scrollbar"
-    tabindex="-1"
-    id="MegaMenu-Content-{{ section.id }}-{{ forloopIndex }}-{{ block_id }}"
-  >
-    <ul
-      id="HeaderMenu-MenuList-{{ forloopIndex }}"
-      class="header__submenu list-menu caption-large motion-reduce"
-      role="list"
-    >
-      {%- for childlink in link.links -%}
-        <li>
-          {%- if childlink.links == blank -%}
-            <a
-              id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
-              href="{{ childlink.url }}"
-              class="header__menu-item list-menu__item link link--text focus-inset link--hover-underline caption-large mega-menu__link--level-3 {{ class_item_hover_reveal }}{% if childlink.current %} list-menu__item--active{% endif %}{% render 'highlight-class', order: '2', keys: keys, compare: childlink.title, settings: sec_settings %}"
-              {% if childlink.current %}
-                aria-current="page"
-              {% endif %}
-              style="{%  render 'highlight-style', order: '2', keys: keys, compare: childlink.title, color: highlight_color, settings: sec_settings %}"
-            >
-              {{ childlink.title | escape }}
-              {% render 'highlight-label-menu',
-                order: '2',
-                keys: keys,
-                compare: childlink.title,
-                settings: sec_settings
-              %}
-            </a>
-          {%- else -%}
-            <details
-              id="Details-HeaderSubMenu-{{ link.handle }}-{{ childlink.handle }}"
-              class="relative details--dropdown"
-              is="dropdown-details"
-              activate-event="hover"
-              data-index="0"
-            >
+
+<nav class="header__inline-menu">
+  <ul class="list-menu list-menu--inline" role="list">
+    {%- for link in section.settings.menu.links -%}
+      <li>
+        {%- if link.links != blank -%}
+          <header-menu>
+            <details id="Details-HeaderMenu-{{ forloop.index }}">
               <summary
-                id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
-                class="details__summary header__menu-item link link--text list-menu__item link--hover-underline focus-inset caption-large mega-menu__link--level-3 {{ class_item_hover_reveal }}{% render 'highlight-class', order: '2', keys: keys, compare: childlink.title, settings: sec_settings %}"
-                style="{%  render 'highlight-style', order: '2', keys: keys, compare: childlink.title, color: highlight_color, settings: sec_settings %}"
+                id="HeaderMenu-{{ link.handle }}"
+                class="header__menu-item list-menu__item link focus-inset"
               >
-                {{ childlink.title | escape }}
-                {% if icon_type == 'caret' %}
-                  <span class="svg-wrapper">
-                    {{- 'icon-caret.svg' | inline_asset_content -}}
-                  </span>
-                {% endif %}
-                {% render 'highlight-label-menu',
-                  order: '2',
-                  keys: keys,
-                  compare: childlink.title,
-                  settings: sec_settings
-                %}
-              </summary>
-              <div class="details__list header__submenu-wrapper header__submenu-wrapper-grandchild list-menu--wrapper list-menu list-menu--disclosure top-0 left-full z-1 motion-reduce global-settings-popup">
-                <ul
-                  id="HeaderMenu-SubMenuList-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
-                  class="header__submenu list-menu"
+                <span
+                  {%- if link.child_active %}
+                    class="header__active-menu-item"
+                  {% endif %}
                 >
-                  {%- for grandchildlink in childlink.links -%}
-                    <li>
+                  {{- link.title | escape -}}
+                </span>
+                {{- 'icon-caret.svg' | inline_asset_content -}}
+              </summary>
+              <ul
+                id="HeaderMenu-MenuList-{{ forloop.index }}"
+                class="header__submenu list-menu list-menu--disclosure color-{{ section.settings.menu_color_scheme }} gradient caption-large motion-reduce global-settings-popup"
+                role="list"
+                tabindex="-1"
+              >
+                {%- for childlink in link.links -%}
+                  <li>
+                    {%- if childlink.links == blank -%}
                       <a
-                        id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
-                        href="{{ grandchildlink.url }}"
-                        class="
-                          header__menu-item header__menu-item--last list-menu__item link link--text focus-inset link--hover-underline caption-large mega-menu__link--level-3 {{ class_item_hover_reveal }}{% if grandchildlink.current %} list-menu__item--active{% endif %}
-                          {% render 'highlight-class', order: '3', keys: keys, compare: grandchildlink.title, settings: sec_settings %}
-                        "
-                        {% if grandchildlink.current %}
+                        id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
+                        href="{{ childlink.url }}"
+                        class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if childlink.current %} list-menu__item--active{% endif %}"
+                        {% if childlink.current %}
                           aria-current="page"
                         {% endif %}
-                        style="{%  render 'highlight-style', order: '3', keys: keys, compare: grandchildlink.title, color: highlight_color, settings: sec_settings %}"
                       >
-                        {{ grandchildlink.title | escape }}
-                        {% render 'highlight-label-menu',
-                          order: '3',
-                          keys: keys,
-                          compare: grandchildlink.title,
-                          settings: sec_settings
-                        %}
+                        {{ childlink.title | escape }}
                       </a>
-                    </li>
-                  {%- endfor -%}
-                </ul>
-              </div>
+                    {%- else -%}
+                      <details id="Details-HeaderSubMenu-{{ link.handle }}-{{ childlink.handle }}">
+                        <summary
+                          id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
+                          class="header__menu-item link link--text list-menu__item focus-inset caption-large"
+                        >
+                          <span>{{ childlink.title | escape }}</span>
+                          {{- 'icon-caret.svg' | inline_asset_content -}}
+                        </summary>
+                        <ul
+                          id="HeaderMenu-SubMenuList-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
+                          class="header__submenu list-menu motion-reduce"
+                        >
+                          {%- for grandchildlink in childlink.links -%}
+                            <li>
+                              <a
+                                id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
+                                href="{{ grandchildlink.url }}"
+                                class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if grandchildlink.current %} list-menu__item--active{% endif %}"
+                                {% if grandchildlink.current %}
+                                  aria-current="page"
+                                {% endif %}
+                              >
+                                {{ grandchildlink.title | escape }}
+                              </a>
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      </details>
+                    {%- endif -%}
+                  </li>
+                {%- endfor -%}
+              </ul>
             </details>
-          {%- endif -%}
-        </li>
-      {%- endfor -%}
-    </ul>
-  </div>
-{%- endunless -%}
+          </header-menu>
+        {%- else -%}
+          <a
+            id="HeaderMenu-{{ link.handle }}"
+            href="{{ link.url }}"
+            class="header__menu-item list-menu__item link link--text focus-inset"
+            {% if link.current %}
+              aria-current="page"
+            {% endif %}
+          >
+            <span
+              {%- if link.current %}
+                class="header__active-menu-item"
+              {% endif %}
+            >
+              {{- link.title | escape -}}
+            </span>
+          </a>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+</nav>

@@ -19,7 +19,7 @@
         assign swatch_count = option.values | map: 'swatch' | compact | size
         assign picker_type = block.settings.picker_type
 
-        if swatch_count > 0
+        if swatch_count > 0 and block.settings.swatch_shape != 'none'
           if block.settings.picker_type == 'dropdown'
             assign picker_type = 'swatch_dropdown'
           else
@@ -44,12 +44,7 @@
         </fieldset>
       {%- elsif picker_type == 'button' -%}
         <fieldset class="js product-form__input product-form__input--pill">
-          <legend class="form__label">
-            {{ option.name }}:
-            <span data-selected-value>
-              {{- option.selected_value -}}
-            </span>
-          </legend>
+          {% comment %} <legend class="form__label">{{ option.name }}</legend> {% endcomment %}
           {% render 'product-variant-options',
             product: product,
             option: option,
@@ -60,10 +55,7 @@
       {%- else -%}
         <div class="product-form__input product-form__input--dropdown">
           <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
-            {{ option.name }}:
-            <span data-selected-value>
-              {{- option.selected_value -}}
-            </span>
+            {{ option.name }}
           </label>
           <div class="select">
             {%- if picker_type == 'swatch_dropdown' -%}
@@ -71,7 +63,7 @@
                 data-selected-value
                 class="dropdown-swatch"
               >
-                {% render 'swatch', swatch: option.selected_value.swatch %}
+                {% render 'swatch', swatch: option.selected_value.swatch, shape: block.settings.swatch_shape %}
               </span>
             {%- endif -%}
             <select
@@ -95,6 +87,8 @@
       {%- endif -%}
     {%- endfor -%}
 
-    <script type="application/json" data-selected-variant>{{ product.selected_or_first_available_variant | json }}</script>
+    <script type="application/json" data-selected-variant>
+      {{ product.selected_or_first_available_variant | json }}
+    </script>
   </variant-selects>
 {%- endunless -%}

@@ -3,21 +3,15 @@ class FacetFiltersForm extends HTMLElement {
     super();
     this.onActiveFilterClick = this.onActiveFilterClick.bind(this);
 
-    this.debouncedOnSubmit = theme.utils.debounce((event) => {
+    this.debouncedOnSubmit = debounce((event) => {
       this.onSubmitHandler(event);
     }, 800);
 
     const facetForm = this.querySelector('form');
-    facetForm.addEventListener('input', this.onInputChange.bind(this));
+    facetForm.addEventListener('input', this.debouncedOnSubmit.bind(this));
 
     const facetWrapper = this.querySelector('#FacetsWrapperDesktop');
     if (facetWrapper) facetWrapper.addEventListener('keyup', onKeyUpEscape);
-
-    // Add event listener for price range apply button
-    this.addEventListener('click', this.onPriceRangeApply.bind(this));
-
-    // Add event listener for drawer overlay click to close drawer
-    this.setupDrawerOverlayClose();
   }
 
   static setListeners() {
@@ -26,7 +20,6 @@ class FacetFiltersForm extends HTMLElement {
       if (searchParams === FacetFiltersForm.searchParamsPrev) return;
       FacetFiltersForm.renderPage(searchParams, null, false);
     };
-    FacetFiltersForm.renderProductPerPage();
     window.addEventListener('popstate', onHistoryChange);
   }
 
@@ -40,17 +33,17 @@ class FacetFiltersForm extends HTMLElement {
     FacetFiltersForm.searchParamsPrev = searchParams;
     const sections = FacetFiltersForm.getSections();
     const countContainer = document.getElementById('ProductCount');
-    const countContainerMobile = document.getElementById('ProductCountMobile');
+    const countContainerDesktop = document.getElementById('ProductCountDesktop');
     const loadingSpinners = document.querySelectorAll(
-      '.product-count .loading__spinner, .product-grid-container .loading__spinner'
+      '.facets-container .loading__spinner, facet-filters-form .loading__spinner'
     );
     loadingSpinners.forEach((spinner) => spinner.classList.remove('hidden'));
     document.getElementById('ProductGridContainer').querySelector('.collection').classList.add('loading');
     if (countContainer) {
       countContainer.classList.add('loading');
     }
-    if (countContainerMobile) {
-      countContainerMobile.classList.add('loading');
+    if (countContainerDesktop) {
+      countContainerDesktop.classList.add('loading');
     }
 
     sections.forEach((section) => {
@@ -74,8 +67,6 @@ class FacetFiltersForm extends HTMLElement {
         FacetFiltersForm.renderFilters(html, event);
         FacetFiltersForm.renderProductGridContainer(html);
         FacetFiltersForm.renderProductCount(html);
-        FacetFiltersForm.renderProductPerPage();
-        FacetFiltersForm.clickGridView(html);
         if (typeof initializeScrollAnimationTrigger === 'function') initializeScrollAnimationTrigger(html.innerHTML);
       });
   }
@@ -85,8 +76,6 @@ class FacetFiltersForm extends HTMLElement {
     FacetFiltersForm.renderFilters(html, event);
     FacetFiltersForm.renderProductGridContainer(html);
     FacetFiltersForm.renderProductCount(html);
-    FacetFiltersForm.renderProductPerPage();
-    FacetFiltersForm.clickGridView(html);
     if (typeof initializeScrollAnimationTrigger === 'function') initializeScrollAnimationTrigger(html.innerHTML);
   }
 
@@ -101,77 +90,20 @@ class FacetFiltersForm extends HTMLElement {
       .forEach((element) => {
         element.classList.add('scroll-trigger--cancel');
       });
-
-    // Rebind 'show more swatches' buttons after grid re-render
-    if (typeof initMoreSwatchButtons === 'function') {
-      const container = document.getElementById('ProductGridContainer');
-      initMoreSwatchButtons(container || document);
-    }
-  }
-
-  static clickGridView (event) {
-    document.querySelectorAll('.button--grid-view').forEach((button) => {
-      button.addEventListener('click', this.changeLayoutGrid.bind(this));
-    });
-  }
-
-  static changeLayoutGrid (event) {
-    const gridView = event.currentTarget.dataset.grid;
-    document.querySelectorAll('.button--grid-view').forEach((button) => {
-      button.classList.add('cursor-pointer');
-      button.classList.remove('active');
-    });
-
-    event.currentTarget.classList.remove('cursor-pointer');
-    event.currentTarget.classList.add('active');
-    document.querySelector('.product-grid-container .product-grid').setAttribute('data-view', gridView);
-  }
-
-  static renderProductPerPage() {
-    const productGrid = document.querySelector('.product-grid-container .product-grid');
-
-    document.querySelectorAll('input[name="per_page"]').forEach(function(input) {
-      input.addEventListener('change', function() {
-        input.closest('.details__list').querySelector('.selected').classList.remove('selected', 'pointer-events-none');
-        input.closest('.facet-filters__sort_item').classList.add('selected', 'pointer-events-none');
-        input.closest('details').querySelector('.label-text').innerHTML = this.value;
-        var data = new URLSearchParams();
-        data.append('attributes[pagination]', this.value);
-
-        fetch('/cart.js', {
-          method: 'POST',
-          body: data,
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        })
-        .then((response) => response.text());
-      });
-    });
-
-    if (productGrid) {
-      const gridViewButton = document.querySelector('.button--grid-view.active');
-
-      if (gridViewButton) {
-        productGrid.setAttribute('data-view', gridViewButton.dataset.grid);
-      }
-    }
   }
 
   static renderProductCount(html) {
     const count = new DOMParser().parseFromString(html, 'text/html').getElementById('ProductCount').innerHTML;
     const container = document.getElementById('ProductCount');
-    const containerMobile = document.getElementById('ProductCountMobile');
+    const containerDesktop = document.getElementById('ProductCountDesktop');
     container.innerHTML = count;
     container.classList.remove('loading');
-
-    if(containerMobile) {
-      containerMobile.innerHTML = count;
-      containerMobile.classList.remove('loading');
+    if (containerDesktop) {
+      containerDesktop.innerHTML = count;
+      containerDesktop.classList.remove('loading');
     }
-
     const loadingSpinners = document.querySelectorAll(
-      '.product-count .loading__spinner'
+      '.facets-container .loading__spinner, facet-filters-form .loading__spinner'
     );
     loadingSpinners.forEach((spinner) => spinner.classList.add('hidden'));
   }
@@ -245,7 +177,7 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   static renderActiveFacets(html) {
-    const activeFacetElementSelectors = ['.active-facets-mobile', '#FacetsWrapperDesktop', '.active-facets-desktop'];
+    const activeFacetElementSelectors = ['.active-facets-mobile', '.active-facets-desktop'];
 
     activeFacetElementSelectors.forEach((selector) => {
       const activeFacetsElement = html.querySelector(selector);
@@ -265,11 +197,6 @@ class FacetFiltersForm extends HTMLElement {
     });
 
     document.getElementById('FacetFiltersFormMobile').closest('menu-drawer').bindEvents();
-
-    const facetFiltersForm = document.querySelector('facet-filters-form');
-    if (facetFiltersForm) {
-      facetFiltersForm.setupDrawerOverlayClose();
-    }
   }
 
   static renderCounts(source, target) {
@@ -345,46 +272,13 @@ class FacetFiltersForm extends HTMLElement {
       sortFilterForms.forEach((form) => {
         if (!isMobile) {
           if (form.id === 'FacetSortForm' || form.id === 'FacetFiltersForm' || form.id === 'FacetSortDrawerForm') {
-            console.log(`%c🔍 Log form.id desk:`, "color: #eaefef; background: #60539f; font-weight: bold; padding: 8px 16px; border-radius: 4px;", form.id);
-            console.log(`%c🔍 Log this.createSearchParams:`, "color: #eaefef; background: #60539f; font-weight: bold; padding: 8px 16px; border-radius: 4px;", this.createSearchParams);
-
             forms.push(this.createSearchParams(form));
           }
         } else if (form.id === 'FacetFiltersFormMobile') {
-          console.log(`%c🔍 Log form.id:`, "color: #eaefef; background: #60539f; font-weight: bold; padding: 8px 16px; border-radius: 4px;", form.id);
-
-          console.log(`%c🔍 Log this.createSearchParams:`, "color: #eaefef; background: #60539f; font-weight: bold; padding: 8px 16px; border-radius: 4px;", this.createSearchParams);
-
-
           forms.push(this.createSearchParams(form));
         }
       });
       this.onSubmitForm(forms.join('&'), event);
-    }
-  }
-
-  onInputChange(event) {
-    // Check if the input is a price range input
-    const isPriceRangeInput = event.target.classList.contains('filter__price_change') ||
-                             event.target.classList.contains('filter__price_number');
-
-    // Only auto-submit if it's not a price range input
-    if (!isPriceRangeInput) {
-      this.debouncedOnSubmit(event);
-    }
-  }
-
-  onPriceRangeApply(event) {
-    // Check if the clicked element is the price range apply button
-    if (event.target.closest('.facets-price__apply button')) {
-      event.preventDefault();
-
-      // Find the form and submit it manually
-      const form = this.querySelector('form');
-      if (form) {
-        const searchParams = this.createSearchParams(form);
-        this.onSubmitForm(searchParams, event);
-      }
     }
   }
 
@@ -396,70 +290,28 @@ class FacetFiltersForm extends HTMLElement {
         ? ''
         : event.currentTarget.href.slice(event.currentTarget.href.indexOf('?') + 1);
     FacetFiltersForm.renderPage(url);
-    FacetFiltersForm.renderPage(url);
-
-    if(window.innerWidth <= 1024) {
-      document.querySelectorAll('.mobile-facets__details').forEach(item => {
-        item.removeAttribute('style');
-        item.removeAttribute('open')
-      })
-    }
-  }
-
-  setupDrawerOverlayClose() {
-    const drawerOverlay = this.querySelector('[data-drawer-overlay]');
-    if (drawerOverlay) {
-      drawerOverlay.addEventListener('click', (event) => {
-        event.preventDefault();
-        this.closeDrawer();
-      });
-    }
-  }
-
-  closeDrawer() {
-    const closeButton = this.querySelector('[data-close-drawer]');
-    if (closeButton) {
-      closeButton.click();
-      document.body.classList.remove('overflow-hidden-mobile');
-    } else {
-      const menuDrawer = this.closest('menu-drawer');
-      if (menuDrawer) {
-        const details = menuDrawer.querySelector('details');
-        if (details && details.hasAttribute('open')) {
-          details.removeAttribute('open');
-          document.body.classList.remove('overflow-hidden-mobile');
-        }
-      }
-    }
   }
 }
 
 FacetFiltersForm.filterData = [];
 FacetFiltersForm.searchParamsInitial = window.location.search.slice(1);
 FacetFiltersForm.searchParamsPrev = window.location.search.slice(1);
-if (!customElements.get('facet-filters-form')) customElements.define('facet-filters-form', FacetFiltersForm);
+customElements.define('facet-filters-form', FacetFiltersForm);
 FacetFiltersForm.setListeners();
 
 class PriceRange extends HTMLElement {
   constructor() {
     super();
-    this.rangeSliderPrice();
     this.querySelectorAll('input').forEach((element) => {
       element.addEventListener('change', this.onRangeChange.bind(this));
       element.addEventListener('keydown', this.onKeyDown.bind(this));
     });
     this.setMinAndMaxValues();
-
-    const numberS = this.querySelectorAll('.filter__price_change');
-    let value1 = numberS[0].value;
-    let value2 = numberS[1].value;
-    this.updateDisplay(value1, value2);
   }
 
   onRangeChange(event) {
-    // this.adjustToValidValues(event.currentTarget);
+    this.adjustToValidValues(event.currentTarget);
     this.setMinAndMaxValues();
-    // Note: Form submission is now handled by the apply button click
   }
 
   onKeyDown(event) {
@@ -473,102 +325,23 @@ class PriceRange extends HTMLElement {
     const inputs = this.querySelectorAll('input');
     const minInput = inputs[0];
     const maxInput = inputs[1];
-
-    // if (maxInput.value) minInput.setAttribute('data-max', maxInput.value);
-    // if (minInput.value) maxInput.setAttribute('data-min', minInput.value);
+    if (maxInput.value) minInput.setAttribute('data-max', maxInput.value);
+    if (minInput.value) maxInput.setAttribute('data-min', minInput.value);
     if (minInput.value === '') maxInput.setAttribute('data-min', 0);
     if (maxInput.value === '') minInput.setAttribute('data-max', maxInput.getAttribute('data-max'));
   }
 
-  // adjustToValidValues(input) {
-  //   const value = Number(input.value);
-  //   const min = Number(input.getAttribute('data-min'));
-  //   const max = Number(input.getAttribute('data-max'));
+  adjustToValidValues(input) {
+    const value = Number(input.value);
+    const min = Number(input.getAttribute('data-min'));
+    const max = Number(input.getAttribute('data-max'));
 
-  //   if (value < min) input.value = min;
-  //   if (value > max) input.value = max;
-  // }
-
-  rangeSliderPrice() {
-    let rangeS = this.querySelectorAll('.filter__price_change'),
-        numberS = this.querySelectorAll('.filter__price_number'),
-        isFireFox = typeof InstallTrigger !== 'undefined',
-        lowerSlider = rangeS[0],
-        upperSlider = rangeS[1];
-
-    rangeS.forEach(element => {
-      element.oninput = () => {
-        let slide1 = Math.floor(rangeS[0].value),
-          slide2 = Math.ceil(rangeS[1].value),
-          slide = Math.round(Number(this.querySelector('.filter__price_change').max) / 100 * (72 / (this.offsetWidth / 100)));
-
-        if (slide1 > slide2 - slide) {
-          if (slide2 != upperSlider.max) {
-            upperSlider.value = slide1 + slide;
-            numberS[0].value = lowerSlider.value;
-            numberS[1].value = slide1 + slide;
-
-            if (slide2 == upperSlider.max) {
-              lowerSlider.value = parseInt(upperSlider.max) - slide;
-              numberS[0].value = parseInt(upperSlider.max) - slide;
-            }
-          }
-        }
-
-        if (slide2 < slide1 + slide) {
-          if (slide1 == lowerSlider.min) return;
-          lowerSlider.value = slide2 - slide;
-          numberS[0].value = slide2 - slide;
-          numberS[1].value = upperSlider.value;
-
-          if (slide1 == lowerSlider.min) {
-            upperSlider.value = slide;
-            numberS[1].value = slide;
-          }
-        }
-
-        if (slide2 < slide1 + slide && slide2 == upperSlider.max) return;
-
-        numberS[0].value = slide1;
-        numberS[1].value = slide2;
-        if (!isFireFox) this.updateDisplay(numberS[0].value, numberS[1].value);
-      }
-    });
-
-    numberS.forEach((element) => {
-      element.oninput = () => {
-        var number1 = parseFloat(numberS[0].placeholder),
-            checkValue1 = number1 != number1,
-            number2 = parseFloat(numberS[1].placeholder),
-            checkValue2 = number2 != number2;
-
-        if (!checkValue1) {
-          rangeS[0].placeholder = number1;
-        }
-
-        if (!checkValue2) {
-          rangeS[1].placeholder = number2;
-        }
-
-        if (number1 > number2) {
-          if (!isFireFox) this.updateDisplay(number2, number1);
-        } else {
-          if (!isFireFox) this.updateDisplay(number1, number2);
-        }
-      }
-    });
-  }
-
-  updateDisplay(value1, value2) {
-    const priceRange = this.querySelector('.facets-price__range');
-    const max = this.querySelector('.filter__price_change').max;
-    const width = priceRange.clientWidth;
-
-    priceRange.style.setProperty('--left-space', (parseInt(value1) / parseInt(max)) * width + 'px');
-    priceRange.style.setProperty('--right-space', (width - (parseInt(value2) / parseInt(max)) * width) + 'px');
+    if (value < min) input.value = min;
+    if (value > max) input.value = max;
   }
 }
-if (!customElements.get('price-range')) customElements.define('price-range', PriceRange);
+
+customElements.define('price-range', PriceRange);
 
 class FacetRemove extends HTMLElement {
   constructor() {
@@ -588,4 +361,5 @@ class FacetRemove extends HTMLElement {
     form.onActiveFilterClick(event);
   }
 }
-if (!customElements.get('facet-remove')) customElements.define('facet-remove', FacetRemove);
+
+customElements.define('facet-remove', FacetRemove);

@@ -15,7 +15,7 @@
   - additional_props: {String} (optional) additional properties to attach to the input
 
   Usage:
-    {% render 'swatch-input',
+   {% render 'swatch-input',
       id: input_id,
       name: input_name,
       value: input_value,
@@ -45,8 +45,8 @@
 <label
   for="{{ id }}"
   title="{{ value }}"
-  class="swatch-input__label"
+  class="swatch-input__label{% if shape == 'square' %} swatch-input__label--square{% endif %}"
 >
-  {% render 'swatch', swatch: swatch, swatch_type: swatch_type %}
+  {% render 'swatch', swatch: swatch, shape: shape %}
   {{ help_text }}
 </label>

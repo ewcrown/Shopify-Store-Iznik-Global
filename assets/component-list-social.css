@@ -1,3 +1,15 @@
+.list-social {
+  display: none;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+@media only screen and (max-width: 749px) {
+  .list-social {
+    justify-content: center;
+  }
+}
+
 .list-social__item .icon {
   height: 2.2rem;
   width: 2.2rem;
@@ -6,7 +18,8 @@
 .list-social__link {
   align-items: center;
   display: flex;
-  color: var(--color-foreground);
+  padding: 1.1rem;
+  color: rgb(var(--color-foreground));
 }
 
 .utility-bar .list-social__link {
@@ -14,35 +27,6 @@
   height: 3.8rem;
 }
 
-.list-social--custom .list-social__item {
-  width: var(--social-item-size);
-  height: var(--social-item-size);
-  border-radius: 50%;
-  background-color: var(--social-item-bg-color);
-  color: var(--social-item-color);
-  border: 1px solid var(--social-item-border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.list-social--custom .list-social__item .list-social__link {
-  transition: all 0.2s ease;
-  color: inherit;
-}
-
-@media (hover: hover) {
-  .list-social--custom .list-social__item:hover {
-    background-color: var(--social-item-bg-color-hover);
-    color: var(--social-item-color-hover);
-    border-color: var(--social-item-border-color-hover);
-  }
-}
-
-@media (max-width: 750px) {
-  .list-social--custom .list-social__item {
-    width: var(--social-item-size-mobile);
-    height: var(--social-item-size-mobile);
-  }
+.list-social__link:hover .icon {
+  transform: scale(1.07);
 }

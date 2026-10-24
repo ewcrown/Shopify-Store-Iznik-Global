@@ -1,0 +1,199 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  .image-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  @media screen and (min-width: 750px) {
+    .image-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .image-grid__item {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .image-grid__link {
+    position: relative;
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .image-grid__media {
+    margin: 0;
+    padding: 0;
+  }
+
+  .image-grid__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .image-grid__content {
+    position: absolute;
+    bottom: 4rem;
+    left: 3rem;
+    color: white;
+    z-index: 2;
+    text-align: left;
+  }
+
+  .image-grid__title {
+    margin: 0 0 1.5rem 0;
+    color: white;
+    font-size: 2.4rem;
+    letter-spacing: 0.15rem;
+    text-transform: uppercase;
+  }
+
+  .image-grid__button {
+    display: inline-block;
+    padding: 4px 8px;
+    border: 1px solid white;
+    background: transparent;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    text-transform: capitalize;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  .image-grid__button:hover {
+    background: white;
+    color: black;
+  }
+
+  @media screen and (max-width: 768px) {
+    .image-grid__button {
+    font-size: 12px;
+  }
+  .image-grid__title {
+    font-size: 20px;
+  }
+  }
+
+{%- endstyle -%}
+
+<div class="section-{{ section.id }}-padding">
+  <div class="image-grid">
+    {%- for block in section.blocks -%}
+      <div class="image-grid__item" {{ block.shopify_attributes }}>
+        {%- if block.settings.link != blank -%}
+          <a class="image-grid__link" href="{{ block.settings.link }}"{% if block.settings.title != blank %} aria-label="{{ block.settings.title | escape }}"{% endif %}>
+        {%- endif -%}
+        <div class="image-grid__media">
+          {%- if block.settings.image != blank -%}
+            {{ block.settings.image | image_url: width: 1500 | image_tag: loading: 'lazy' }}
+          {%- else -%}
+            {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          {%- endif -%}
+        </div>
+        <div class="image-grid__content">
+          {%- if block.settings.title != blank -%}
+            <h2 class="image-grid__title">{{ block.settings.title }}</h2>
+          {%- endif -%}
+          {%- if block.settings.button_label != blank -%}
+            {%- if block.settings.link != blank -%}
+              <span class="image-grid__button">{{ block.settings.button_label }}</span>
+            {%- else -%}
+              <a href="{{ block.settings.link }}" class="image-grid__button">{{ block.settings.button_label }}</a>
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+        {%- if block.settings.link != blank -%}
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Collection Grid",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top Padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom Padding",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "grid_item",
+      "name": "Grid Item",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "READY TO SHIP"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button Label",
+          "default": "View Products"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection Grid",
+      "blocks": [
+        { "type": "grid_item" },
+        { "type": "grid_item" },
+      ]
+    }
+  ]
+}
+{% endschema %}

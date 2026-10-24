@@ -10,7 +10,29 @@
   Usage:
   {% render 'buy-buttons', block: block, product: product, product_form_id: product_form_id, section_id: section.id, show_pickup_availability: true %}
 {% endcomment %}
-<div {{ block.shopify_attributes }}>
+{%- liquid
+  assign launch_countdown_active = false
+  assign launch_timestamp = settings.launch_datetime | date: '%s' | times: 1000
+  assign current_timestamp = 'now' | date: '%s' | times: 1000
+  assign launch_pending = false
+  if settings.launch_countdown_mode == 'enabled' and product.tags contains 'launching-tomorrow' and launch_timestamp > 0
+    assign launch_countdown_active = true
+    if launch_timestamp > current_timestamp
+      assign launch_pending = true
+    endif
+  endif
+-%}
+<div
+  {{ block.shopify_attributes }}
+  {% if launch_countdown_active %}
+    data-launch-product
+    data-launch-at="{{ launch_timestamp }}"
+      {% if launch_pending %}data-launch-pending="true"{% endif %}
+  {% endif %}
+>
+  {% if launch_countdown_active %}
+    <div class="launch-countdown" data-launch-countdown{% unless launch_pending %} hidden{% endunless %} role="timer" aria-live="off"></div>
+  {% endif %}
   {%- if product != blank -%}
     {%- liquid
       assign gift_card_recipient_feature_active = false
@@ -49,7 +71,7 @@
           value="{{ product.selected_or_first_available_variant.id }}"
           {% if product.selected_or_first_available_variant.available == false
             or quantity_rule_soldout
-            or product.selected_or_first_available_variant == nil
+            or product.selected_or_first_available_variant == null
           %}
             disabled
           {% endif %}
@@ -57,8 +79,55 @@
         >
 
         {%- if gift_card_recipient_feature_active -%}
-          {%- render 'gift-card-recipient-form', product: product, form: form, section: section, block: block -%}
+          {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
         {%- endif -%}
+
+        {%- liquid
+          assign selected_variant_title = product.selected_or_first_available_variant.title | downcase
+          assign show_stitched_sizes = false
+          if selected_variant_title contains 'stitch'
+            unless selected_variant_title contains 'unstitched'
+              assign show_stitched_sizes = true
+            endunless
+          endif
+        -%}
+
+        <div
+          class="iznik-stitched-size-options"
+          data-stitched-size-options
+          {% unless show_stitched_sizes %}
+            hidden
+          {% endunless %}
+        >
+          <p class="iznik-stitched-size-options__label">Size</p>
+          <ul class="iznik-stitched-size-options__list">
+            {%- assign stitched_sizes = 'XS,S,M,L,XL' | split: ',' -%}
+            {%- for size in stitched_sizes -%}
+              {%- assign size_input_id = product_form_id | append: '-size-' | append: size | handleize -%}
+              <li>
+                <input
+                  type="radio"
+                  id="{{ size_input_id }}"
+                  name="properties[Size]"
+                  value="{{ size }}"
+                  {% if forloop.first and show_stitched_sizes %}
+                    checked
+                  {% endif %}
+                  {% unless show_stitched_sizes %}
+                    disabled
+                  {% endunless %}
+                >
+                <label for="{{ size_input_id }}">{{ size }}</label>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+        {% render 'size-chart-popup' %}
+        {%- render 'variant-add-on-products',
+          product: product,
+          product_form_id: product_form_id,
+          section_id: section_id
+        -%}
 
         <div class="product-form__buttons">
           {%- liquid
@@ -69,33 +138,28 @@
             if product.selected_or_first_available_variant.quantity_rule.min > product.selected_or_first_available_variant.inventory_quantity and check_against_inventory
               assign quantity_rule_soldout = true
             endif
-            if product.selected_or_first_available_variant.inventory_quantity <= 0 and product.selected_or_first_available_variant.inventory_policy == 'continue'
-              assign check_pre_order = true
-            endif
           -%}
           <button
             id="ProductSubmitButton-{{ section_id }}"
             type="submit"
             name="add"
-            class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button-secondary{% else %}button--primary{% endif %}"
+            class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
+            data-launch-base-disabled="{% if product.selected_or_first_available_variant.available == false or quantity_rule_soldout or product.selected_or_first_available_variant == null %}true{% else %}false{% endif %}"
             {% if product.selected_or_first_available_variant.available == false
               or quantity_rule_soldout
-              or product.selected_or_first_available_variant == nil
+              or product.selected_or_first_available_variant == null
+              or launch_pending
             %}
               disabled
             {% endif %}
           >
             <span>
-              {%- if product.selected_or_first_available_variant == nil -%}
+              {%- if product.selected_or_first_available_variant == null -%}
                 {{ 'products.product.unavailable' | t }}
               {%- elsif product.selected_or_first_available_variant.available == false or quantity_rule_soldout -%}
                 {{ 'products.product.sold_out' | t }}
               {%- else -%}
-                {% if check_pre_order %}
-                  {{ 'products.product.pre_order' | t }}
-                {% else %}
-                  {{ 'products.product.add_to_cart' | t }}
-                {% endif %}
+                {{ 'products.product.add_to_cart' | t }}
               {%- endif -%}
             </span>
             {%- render 'loading-spinner' -%}
@@ -104,6 +168,96 @@
             {{ form | payment_button }}
           {%- endif -%}
         </div>
+
+        <script>
+          (function() {
+            var form = document.getElementById({{ product_form_id | json }});
+            if (!form || form.dataset.iznikOrderReady === 'true') return;
+            form.dataset.iznikOrderReady = 'true';
+
+            var productRoot = form.closest('product-info') || document;
+
+            function placeLiningAddOns() {
+              var price = productRoot.querySelector('#price-{{ section_id }}');
+              var addOns = form.querySelector('variant-add-on-products');
+              if (price && addOns && price.nextElementSibling !== addOns) {
+                price.after(addOns);
+              }
+            }
+
+            function isStitchedValue(value) {
+              var normalizedValue = (value || '').trim().toLowerCase();
+              return normalizedValue === 'stitched';
+            }
+
+            function getSelectedStitchingValue() {
+              var selectedValue = '';
+
+              productRoot
+                .querySelectorAll('variant-selects input[type="radio"]:checked, variant-selects select')
+                .forEach(function(input) {
+                  var value = (input.value || '').trim().toLowerCase();
+                  if (value === 'stitched' || value === 'unstitched') selectedValue = value;
+                });
+
+              return selectedValue;
+            }
+
+            function setStitchedSizeState(sizeOptions, show) {
+              if (!sizeOptions) return;
+
+              var inputs = sizeOptions.querySelectorAll('input');
+              sizeOptions.hidden = !show;
+              inputs.forEach(function(input) {
+                input.disabled = !show;
+                if (!show) input.checked = false;
+              });
+
+              if (show && !sizeOptions.querySelector('input:checked') && inputs.length) {
+                inputs[0].checked = true;
+              }
+
+            }
+
+            function setQuantityState(quantitySelector, show) {
+              if (!quantitySelector) return;
+
+              quantitySelector.hidden = !show;
+              quantitySelector.querySelectorAll('input, button').forEach(function(control) {
+                control.disabled = !show;
+              });
+            }
+
+            function updateLiningState(value) {
+              if (!form.isConnected) return;
+                  placeLiningAddOns();
+
+              var selectedValue = value || getSelectedStitchingValue();
+              if (!selectedValue) return;
+
+              var stitched = isStitchedValue(selectedValue);
+              var sizeOptions = form.querySelector('[data-stitched-size-options]');
+              var quantitySelector = productRoot.querySelector('#Quantity-Form-{{ section_id }}');
+              var sizeGuide = productRoot.querySelector('.sc-trigger-container--stitched');
+
+              setStitchedSizeState(sizeOptions, stitched);
+              setQuantityState(quantitySelector, !stitched);
+
+              if (sizeGuide) sizeGuide.style.display = stitched ? '' : 'none';
+            }
+
+            document.addEventListener('change', function(event) {
+              if (event.target.closest('variant-selects')) updateLiningState();
+            });
+
+            document.addEventListener('shopify:section:load', function(event) {
+              if (event.target.contains(form)) updateLiningState();
+            });
+
+            updateLiningState();
+          })();
+        </script>
+
       {%- endform -%}
     </product-form>
   {%- else -%}
@@ -129,14 +283,14 @@
     -%}
 
     <pickup-availability
-      class="product__pickup-availabilities block quick-add-hidden no-js-hidden"
+      class="product__pickup-availabilities quick-add-hidden"
       {% if product.selected_or_first_available_variant.available and pick_up_availabilities.size > 0 %}
         available
       {% endif %}
       data-root-url="{{ routes.root_url }}"
       data-variant-id="{{ product.selected_or_first_available_variant.id }}"
       data-has-only-default-variant="{{ product.has_only_default_variant }}"
-      data-product-page-color-scheme="color-{{ section.settings.color_scheme }}"
+      data-product-page-color-scheme="gradient color-{{ section.settings.color_scheme }}"
     >
       <template>
         <pickup-availability-preview class="pickup-availability-preview">

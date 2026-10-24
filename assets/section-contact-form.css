@@ -1,0 +1,69 @@
+.contact img {
+  max-width: 100%;
+}
+
+.contact .form__message {
+  align-items: flex-start;
+}
+
+.contact .icon-success {
+  margin-top: 0.2rem;
+}
+
+.contact .field {
+  margin-bottom: 1.5rem;
+}
+
+@media screen and (min-width: 750px) {
+  .contact .field {
+    margin-bottom: 2rem;
+  }
+}
+
+.contact__button {
+  margin-top: 3rem;
+}
+
+@media screen and (min-width: 750px) {
+  .contact__button {
+    margin-top: 4rem;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .contact__fields {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-column-gap: 2rem;
+  }
+}
+
+.product-contact {
+  padding-top: 1.6rem;
+}
+
+.product-contact .contact__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+
+.product-contact .field__input {
+  min-width: 0;
+  margin: 0;
+  border: 1px solid #999;
+  border-radius: 0;
+}
+
+.product-contact .field::before,
+.product-contact .field::after {
+  display: none;
+}
+
+.product-contact .contact__button {
+  margin-top: 2rem;
+}
+
+.product-contact .text-area {
+  min-height: 12rem;
+}

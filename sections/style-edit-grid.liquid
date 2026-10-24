@@ -1,0 +1,215 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  .style-edit__header {
+    margin-bottom: 30px;
+    max-width: 500px; 
+  }
+
+  .style-edit__title,
+  .rich-text__heading {
+    margin: 0 0 10px;
+    font-size: 24px;
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  .rich-text__heading {
+    margin: 0 0 5px !important;
+  }
+
+  .style-edit__description {
+    margin: 0;
+    font-size: 1.6rem;
+    line-height: 1.5;
+    color: rgba(var(--color-foreground), 0.75);
+  }
+
+  /* --- GRID LOGIC --- */
+  .style-edit__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 35px;
+  }
+
+  /* Mobile Scroll Styling */
+  @media screen and (max-width: 749px) {
+    .style-edit__grid {
+      flex-wrap: nowrap !important; /* Prevent items from going to the next line */
+      overflow-x: auto;            /* Enable horizontal scroll */
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      gap: 15px;                   /* Gap between items on mobile */
+      margin: 0;           /* Pull to edges of screen */
+      padding: 0;      /* Spacing on sides so items don't touch edges */
+      scrollbar-width: none;       /* Hide scrollbar for Firefox */
+    }
+
+    .style-edit__grid::-webkit-scrollbar {
+      display: none;               /* Hide scrollbar for Chrome/Safari */
+    }
+
+    .style-edit__item {
+      flex: 0 0 80%;               /* Each image takes 80% width so the next one peeks */
+      scroll-snap-align: start;
+    }
+
+    .style-edit__title,
+    .rich-text__heading {
+      font-size: 20px;
+    }
+  }
+
+  /* Desktop Grid Styling */
+  @media screen and (min-width: 990px) {
+    .style-edit__item {
+      flex: 1 1 calc(25% - 35px); /* 4 per row */
+    }
+  }
+
+  .style-edit__link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+    width: 100%;
+  }
+
+  .style-edit__image-wrapper {
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .style-edit__image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+  }
+
+  .style-edit__link:hover .style-edit__image-wrapper img {
+    transform: scale(1.05);
+  }
+{%- endstyle -%}
+
+<div class="page-width section-{{ section.id }}-padding">
+  <div class="style-edit__header">
+    {%- if section.settings.title != blank -%}
+      <h2 class="style-edit__title">{{ section.settings.title }}</h2>
+    {%- endif -%}
+    {%- if section.settings.description != blank -%}
+      <p class="style-edit__description">{{ section.settings.description }}</p>
+    {%- endif -%}
+  </div>
+
+  <div class="style-edit__grid">
+    {%- for block in section.blocks -%}
+      <div class="style-edit__item" {{ block.shopify_attributes }}>
+        {%- if block.settings.link != blank -%}
+          <a href="{{ block.settings.link }}" class="style-edit__link">
+        {%- endif -%}
+
+        <div class="style-edit__image-wrapper">
+          {%- if block.settings.image != blank -%}
+            {{ block.settings.image | image_url: width: 1000 | image_tag: loading: 'lazy' }}
+          {%- else -%}
+            {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          {%- endif -%}
+        </div>
+
+        {%- if block.settings.link != blank -%}
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Style Edit Grid",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "THE STYLE EDIT"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "From wardrobe essentials to statement pieces and accessories for every occasion, shop your favourites at irresistible prices."
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top Padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom Padding",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image_block",
+      "name": "Image Block",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link (Target URL)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Style Edit Grid",
+      "blocks": [
+        { "type": "image_block" },
+        { "type": "image_block" },
+        { "type": "image_block" },
+        { "type": "image_block" }
+      ]
+    }
+  ]
+}
+{% endschema %}

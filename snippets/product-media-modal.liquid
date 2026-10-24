@@ -9,30 +9,37 @@
   {% render 'product-media-modal' %}
 {% endcomment %}
 
-<product-modal
-  class="product-media-modal media-modal modal--popup fixed top-0 left-0 z-9 w-screen h-full flex justify-center no-js-hidden"
-  element-s-popup
-  id="ProductModal-{{ section.id }}"
->
+<product-modal id="ProductModal-{{ section.id }}" class="product-media-modal media-modal">
   <div
-    class="popup__inner product-media-modal__dialog w-full h-full absolute-c-c flex flex-column color-{{ section.settings.color_scheme }} global-settings-popup"
+    class="product-media-modal__dialog color-{{ section.settings.color_scheme }} gradient"
     role="dialog"
     aria-label="{{ 'products.modal.label' | t }}"
     aria-modal="true"
     tabindex="-1"
-    style="--modal-max-height: 100dvh;"
   >
-    <button 
-      class="product-media-modal__toggle drawer__close block t-button bor-none rounded-full cursor-pointer" 
-      type="button" 
-      onclick="this.closest('product-modal').hide()" 
-      aria-label="{{ 'accessibility.close_dialog' | t }}"
-      style="--top: 0.3rem; --right: 0.3rem;"
+    <button
+      id="ModalClose-{{ section.id }}"
+      type="button"
+      class="product-media-modal__toggle"
+      aria-label="{{ 'accessibility.close' | t }}"
     >
       {{ 'icon-close.svg' | inline_asset_content }}
     </button>
+
+    <div class="product-media-modal__controls" aria-label="Product image controls">
+      <button type="button" class="product-media-modal__control" data-modal-previous aria-label="Previous image">
+        <span class="svg-wrapper">{{ 'icon-caret.svg' | inline_asset_content }}</span>
+      </button>
+      <button type="button" class="product-media-modal__control" data-modal-close aria-label="Close image viewer">
+        <span class="svg-wrapper">{{ 'icon-close.svg' | inline_asset_content }}</span>
+      </button>
+      <button type="button" class="product-media-modal__control" data-modal-next aria-label="Next image">
+        <span class="svg-wrapper">{{ 'icon-caret.svg' | inline_asset_content }}</span>
+      </button>
+    </div>
+
     <div
-      class="product-media-modal__content color-{{ section.settings.color_scheme }} cus-scrollbar"
+      class="product-media-modal__content color-{{ section.settings.color_scheme }} gradient"
       role="document"
       aria-label="{{ 'products.modal.label' | t }}"
       tabindex="0"

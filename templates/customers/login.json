@@ -7,32 +7,18 @@
  * made to this file may be overwritten.
  * ------------------------------------------------------------
  */
- {
+{
   "sections": {
-    "breadcrumb_jKaH7N": {
-      "type": "breadcrumb",
-      "name": "Breadcrumb",
-      "settings": {
-        "section_width": "page-width",
-        "page_width_custom": 1570,
-        "separator": "slash",
-        "horizontal_alignment": "start",
-        "gap": 12,
-        "padding-block-start": 0,
-        "padding-block-end": 0
-      }
-    },
     "main": {
       "type": "main-login",
       "settings": {
-        "enable_shop_login_button": false,
+        "enable_shop_login_button": "true",
         "padding_top": 36,
         "padding_bottom": 36
       }
     }
   },
   "order": [
-    "breadcrumb_jKaH7N",
     "main"
   ]
 }

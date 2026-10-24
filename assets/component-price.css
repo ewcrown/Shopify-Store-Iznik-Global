@@ -1,7 +1,14 @@
 .price {
-  font-size: inherit;
-  letter-spacing: inherit;
-  color: var(--color-foreground);
+  font-size: 1.6rem;
+  letter-spacing: 0.1rem;
+  line-height: calc(1 + 0.5 / var(--font-body-scale));
+  color: rgb(var(--color-foreground));
+}
+
+@media screen and (max-width: 768px) {
+  .price {
+    font-size: 1rem;
+  }
 }
 
 .price > * {
@@ -30,18 +37,21 @@
   margin: 0;
 }
 
+@media screen and (min-width: 750px) {
+  .price {
+    margin-bottom: 1rem;
+  }
+}
+
 .price--large {
-  font-size: var(--font-size--md);
+  font-size: 1.6rem;
+  line-height: calc(1 + 0.5 / var(--font-body-scale));
   letter-spacing: 0.13rem;
 }
 
 @media screen and (min-width: 750px) {
-  .price {
-    margin-bottom: 0;
-  }
-
   .price--large {
-    font-size: var(--font-size--lg);
+    font-size: 1.8rem;
   }
 }
 
@@ -82,15 +92,15 @@
 
 .price--on-sale .price-item--regular {
   text-decoration: line-through;
-  color: rgb(var(--color-foreground-rgb) / var(--opacity-75));
-  font-size: var(--font-size--xs);
+  color: #C51A23;
+  /* font-size: 1.3rem; */
 }
 
 .unit-price {
   display: block;
-  font-size: var(--font-size--2xs);  
+  font-size: 1.1rem;
   letter-spacing: 0.04rem;
+  line-height: calc(1 + 0.2 / var(--font-body-scale));
   margin-top: 0.2rem;
-  text-transform: uppercase;
-  color: rgb(var(--color-foreground-rgb) / var(--opacity-70));
+  color: rgba(var(--color-foreground), 0.7);
 }

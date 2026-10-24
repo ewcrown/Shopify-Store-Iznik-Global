@@ -41,4 +41,5 @@ class MainSearch extends SearchForm {
     });
   }
 }
-if (!customElements.get('main-search')) customElements.define('main-search', MainSearch);
+
+customElements.define('main-search', MainSearch);

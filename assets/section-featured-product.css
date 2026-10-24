@@ -1,4 +1,11 @@
+.featured-product .product__media-list {
+  width: 100%;
+  margin: 0;
+  padding-bottom: 0;
+}
+
 .featured-product .product-media-container {
+  margin-bottom: var(--media-shadow-vertical-offset);
   max-width: 100%;
 }
 

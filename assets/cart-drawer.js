@@ -3,37 +3,21 @@ class CartDrawer extends HTMLElement {
     super();
 
     this.addEventListener('keyup', (evt) => evt.code === 'Escape' && this.close());
-    this.overlay = this.querySelector('[id^="CartDrawer-Overlay"]');
-    this.overlay?.addEventListener('click', this.close.bind(this));
+    this.querySelector('#CartDrawer-Overlay').addEventListener('click', this.close.bind(this));
     this.setHeaderCartIconAccessibility();
-
-    if (Shopify.designMode) {
-      document.addEventListener('shopify:section:select', (e) => {
-        if (e.target.matches('.section-cart-drawer')) this.open();
-      });
-
-      document.addEventListener('shopify:section:deselect', (e) => {
-        if (e.target.matches('.section-cart-drawer')) this.close();
-      });
-    }
-  }
-
-  connectedCallback() {
-    if (!this.dataset.moved) {
-      this.dataset.moved = true;
-      document.body.appendChild(this);
-    }
   }
 
   setHeaderCartIconAccessibility() {
-    const cartLink = document.querySelector('.cart-icon--drawer');
-    cartLink?.setAttribute('role', 'button');
-    cartLink?.setAttribute('aria-haspopup', 'dialog');
-    cartLink?.addEventListener('click', (event) => {
+    const cartLink = document.querySelector('#cart-icon-bubble');
+    if (!cartLink) return;
+
+    cartLink.setAttribute('role', 'button');
+    cartLink.setAttribute('aria-haspopup', 'dialog');
+    cartLink.addEventListener('click', (event) => {
       event.preventDefault();
       this.open(cartLink);
     });
-    cartLink?.addEventListener('keydown', (event) => {
+    cartLink.addEventListener('keydown', (event) => {
       if (event.code.toUpperCase() === 'SPACE') {
         event.preventDefault();
         this.open(cartLink);
@@ -42,6 +26,8 @@ class CartDrawer extends HTMLElement {
   }
 
   open(triggeredBy) {
+    this.querySelector('[data-order-note-drawer]')?.classList.remove('is-open');
+    this.querySelector('[data-order-note-drawer]')?.setAttribute('aria-hidden', 'true');
     if (triggeredBy) this.setActiveElement(triggeredBy);
     const cartDrawerNote = this.querySelector('[id^="Details-"] summary');
     if (cartDrawerNote && !cartDrawerNote.hasAttribute('role')) this.setSummaryAccessibility(cartDrawerNote);
@@ -50,62 +36,27 @@ class CartDrawer extends HTMLElement {
       this.classList.add('animate', 'active');
     });
 
-    const dir = this.getAttribute("data-drawer-direction");
-    const contentElement = this.querySelector("[data-drawer-content]");
-
-    this.classList.add("open");
-
-    Motion.timeline([
-      [
-        contentElement,
-        {
-          opacity: [0, 1],
-          transform:
-            dir === "left"
-              ? ["translateX(-100%)", "translateX(0)"]
-              : ["translateX(100%)", "translateX(0)"],
-        },
-        { duration: 0.3, easing: [0.61, 0.22, 0.23, 1], at: "-0.05" },
-      ],
-    ]);
-
     this.addEventListener(
       'transitionend',
       () => {
         const containerToTrapFocusOn = this.classList.contains('is-empty')
           ? this.querySelector('.drawer__inner-empty')
           : document.getElementById('CartDrawer');
-        const focusElement = this.querySelector('.drawer__close');
+        const focusElement = this.querySelector('.drawer__inner') || this.querySelector('.drawer__close');
         trapFocus(containerToTrapFocusOn, focusElement);
-    }, { once: true });
+      },
+      { once: true }
+    );
 
     document.body.classList.add('overflow-hidden');
-    document.documentElement.setAttribute('scroll-lock', '');
   }
 
-  async close() {
+  close() {
+    this.querySelector('[data-order-note-drawer]')?.classList.remove('is-open');
+    this.querySelector('[data-order-note-drawer]')?.setAttribute('aria-hidden', 'true');
+    this.classList.remove('active');
     removeTrapFocus(this.activeElement);
     document.body.classList.remove('overflow-hidden');
-    document.documentElement.removeAttribute('scroll-lock');
-    const dir = this.getAttribute("data-drawer-direction");
-    const contentElement = this.querySelector("[data-drawer-content]");
-
-    await Motion.timeline([
-      [
-        contentElement,
-        {
-          opacity: [1, 0],
-          transform:
-            dir === "left"
-              ? ["translateX(0)", "translateX(-100%)"]
-              : ["translateX(0)", "translateX(100%)"],
-        },
-        { duration: 0.3, easing: [0.61, 0.22, 0.23, 1] },
-      ]
-    ]).finished;
-
-    this.classList.remove("open");
-    this.classList.remove('active');
   }
 
   setSummaryAccessibility(cartDrawerNote) {
@@ -124,15 +75,17 @@ class CartDrawer extends HTMLElement {
   }
 
   renderContents(parsedState) {
-    this.querySelector('.drawer__inner').classList.contains('is-empty') && this.querySelector('.drawer__inner').classList.remove('is-empty');
+    this.querySelector('.drawer__inner').classList.contains('is-empty') &&
+      this.querySelector('.drawer__inner').classList.remove('is-empty');
     this.productId = parsedState.id;
     this.getSectionsToRender().forEach((section) => {
-      const sectionElement = section.selector ? document.querySelector(section.selector) : document.getElementById(section.id);
-      if (sectionElement && parsedState.sections && parsedState.sections[section.id]) {
-        sectionElement.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
-      }
-    });
+      const sectionElement = section.selector
+        ? document.querySelector(section.selector)
+        : document.getElementById(section.id);
 
+      if (!sectionElement) return;
+      sectionElement.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
+    });
     setTimeout(() => {
       this.querySelector('#CartDrawer-Overlay').addEventListener('click', this.close.bind(this));
       this.open();
@@ -163,112 +116,24 @@ class CartDrawer extends HTMLElement {
     this.activeElement = element;
   }
 }
-if (!customElements.get('cart-drawer')) customElements.define('cart-drawer', CartDrawer);
 
-class ModalComponent extends HTMLElement {
-  constructor() {
-    super();
-    this.querySelector('#Modal-Overlay')?.addEventListener('click', this.close.bind(this));
+customElements.define('cart-drawer', CartDrawer);
 
-    const modalId = `#${this.id}`;
-    const toggleButtons = document.querySelectorAll(`[data-drawer-toggle="${modalId}"]`);
-
-    toggleButtons.forEach((button) => {
-      button.addEventListener('click', (event) => {
-        event.preventDefault();
-        this.isOpen ? this.close() : this.show(button);
-      });
-    });
-
-    // Shopify Design Mode
-    if (Shopify.designMode && this.hasAttribute('check-shopify-design-mode')) {
-      this.addEventListener('shopify:block:select', () => (this.isOpen = true));
-      this.addEventListener('shopify:block:deselect', () => (this.isOpen = false));
-    }
-  }
-
-  connectedCallback() {
-    if (!this.dataset.moved) {
-      this.dataset.moved = true;
-      document.body.appendChild(this);
-    }
-  }
-
-  static get observedAttributes() {
-    return ['open'];
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'open') {
-      this.setAttribute('aria-expanded', newValue === '' ? 'true' : 'false');
-    }
-  }
-
-  get isOpen() {
-    return this._isOpen;
-  }
-
-  set isOpen(value) {
-    if (value !== this._isOpen) {
-      this._isOpen = value;
-      if (this.isConnected) {
-        this._animate(value);
-      } else {
-        value ? this.setAttribute('open', '') : this.removeAttribute('open');
-      }
-    }
-    this.setAttribute('aria-expanded', value ? 'true' : 'false');
-  }
-
-  show(opener) {
-    this.openedBy = opener;
-    this.isOpen = true;
-    this.trapFocus();
-  }
-
-  close() {
-    this.isOpen = false;
-    removeTrapFocus(this.openedBy);
-  }
-
-  async _animate(open) {
-    const inner = this.querySelector('.modal__inner');
-    const content = this.querySelector('.modal-content');
-    const header = this.querySelector('.modal-header');
-    this.style.overflow = 'hidden';
-
-    if (open) {
-      this.setAttribute('open', '');
-      await Motion.timeline([
-        [inner, { opacity: [0, 1], transform: ['translateY(2rem)', 'translateY(0)'] }, { duration: 0.4, easing: 'cubic-bezier(0.7, 0, 0.3, 1)' }],
-        [content, { opacity: [0, 1], transform: ['translateY(1rem)', 'translateY(0)'] }, { duration: 0.3, at: '-0.15' }],
-        [header, { opacity: [0, 1], transform: ['translateY(-0.5rem)', 'translateY(0)'] }, { duration: 0.3, at: '-0.2' }],
-      ]).finished;
-    } else {
-      await Motion.timeline([
-        [header, { opacity: [1, 0], transform: ['translateY(0)', 'translateY(-0.5rem)'] }, { duration: 0.2 }],
-        [content, { opacity: [1, 0], transform: ['translateY(0)', 'translateY(1rem)'] }, { duration: 0.2 }],
-        [inner, { opacity: [1, 0], transform: ['translateY(0)', 'translateY(2rem)'] }, { duration: 0.25, easing: 'cubic-bezier(0.7, 0, 0.3, 1)' }],
-      ]).finished;
-      this.removeAttribute('open');
-    }
-
-    this.style.overflow = 'visible';
-  }
-
-  trapFocus() {
-    this.addEventListener(
-      'transitionend',
-      () => {
-        const container = this.querySelector('.modal__inner');
-        const focusEl = this.querySelector('.modal__close');
-        trapFocus(container, focusEl);
+class CartDrawerItems extends CartItems {
+  getSectionsToRender() {
+    return [
+      {
+        id: 'CartDrawer',
+        section: 'cart-drawer',
+        selector: '.drawer__inner',
       },
-      { once: true }
-    );
+      {
+        id: 'cart-icon-bubble',
+        section: 'cart-icon-bubble',
+        selector: '.shopify-section',
+      },
+    ];
   }
 }
 
-if (!customElements.get('modal-component')) {
-  customElements.define('modal-component', ModalComponent);
-}
+customElements.define('cart-drawer-items', CartDrawerItems);

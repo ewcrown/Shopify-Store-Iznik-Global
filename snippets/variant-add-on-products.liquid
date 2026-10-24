@@ -1,0 +1,431 @@
+{% doc %}
+  Renders optional add-on products configured for the currently selected variant type.
+
+  @param {product} product - The product whose selected variant determines the add-ons.
+  @param {string} product_form_id - The id of the main product form.
+  @param {string} section_id - The product section id.
+
+  @example
+  {% render 'variant-add-on-products', product: product, product_form_id: product_form_id, section_id: section.id %}
+{% enddoc %}
+
+{%- assign selected_variant = product.selected_or_first_available_variant -%}
+
+{%- comment -%}
+  Add-on management
+  -----------------
+  Add each tag/product pair to the appropriate list below. Use the format
+  "main-product-tag|add-on-product-url" and separate pairs with commas.
+  The linked add-on is displayed only when the main product has that exact
+  tag.
+
+  Examples:
+    'full-sleeves-lining|/products/full-sleeves-lining-1200'
+    'add-trouser|/products/lining-5-yard-4000-copy'
+
+  The selected variant's title determines which list is used.
+{%- endcomment -%}
+
+
+{%- assign stitched_add_on_rules = 'full-sleeves-lining|/products/full-sleeves-lining-1200,add-trouser|/products/lining-5-yard-4000-copy' | split: ',' -%}
+{%- assign unstitched_add_on_rules = 'lining-5-yard|/products/lining-5-yard,lining-7-yard|/products/lining-7-yard,sharara-lining-5-yard|/products/lining-5-yard,lining-6-yard|/products/lining-6-yard,lining-2-5-yard|/products/lining-2-5-yard,shirt-lining-2-5-yard|/products/lining-2-5-yard,frill-2-5-yard|/products/lining-2-5-yard' | split: ',' -%}
+
+{%- assign selected_variant_title = selected_variant.title | downcase -%}
+{%- assign is_stitched_variant = false -%}
+{%- assign is_unstitched_variant = false -%}
+{%- if selected_variant_title contains 'unstitched' -%}
+  {%- assign is_unstitched_variant = true -%}
+{%- elsif selected_variant_title contains 'stitched' -%}
+  {%- assign is_stitched_variant = true -%}
+{%- endif -%}
+
+{%- assign add_on_products = blank -%}
+{%- if is_stitched_variant -%}
+  {%- assign add_on_rules = stitched_add_on_rules -%}
+{%- elsif is_unstitched_variant -%}
+  {%- assign add_on_rules = unstitched_add_on_rules -%}
+{%- endif -%}
+
+{%- assign sleeve_style_options = 'Short Sleeves,Full Sleeves' | split: ',' -%}
+{%- assign show_sleeve_styles = false -%}
+{%- if is_stitched_variant and product.tags contains 'sleeve-style' -%}
+  {%- assign show_sleeve_styles = true -%}
+{%- endif -%}
+
+{%- comment -%}
+  Resolve only the rules whose tag exists on the main product. Duplicate
+  product handles are ignored when multiple tags point to the same product.
+{%- endcomment -%}
+{%- if add_on_rules != blank -%}
+  {%- assign add_on_products = '' | split: ',' -%}
+  {%- for add_on_rule in add_on_rules -%}
+    {%- assign add_on_rule_parts = add_on_rule | split: '|' -%}
+    {%- assign required_tag = add_on_rule_parts | first | strip -%}
+    {%- assign add_on_link = add_on_rule_parts | last | strip -%}
+    {%- assign add_on_handle = add_on_link | split: '/products/' | last | split: '?' | first | split: '/' | first | handleize -%}
+    {%- assign add_on_product = blank -%}
+    {%- if add_on_handle != blank -%}
+      {%- assign add_on_product = all_products[add_on_handle] -%}
+    {%- endif -%}
+    {%- if add_on_product != blank and required_tag != blank and product.tags contains required_tag -%}
+      {%- unless add_on_products contains add_on_handle -%}
+      {%- assign add_on_handle_item = add_on_handle | split: '|' -%}
+      {%- assign add_on_products = add_on_products | concat: add_on_handle_item -%}
+      {%- endunless -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+<variant-add-on-products
+  id="VariantAddOns-{{ section_id }}"
+  class="variant-add-ons"
+  data-section-id="{{ section_id }}"
+  data-form-id="{{ product_form_id }}"
+  data-selected-variant-id="{{ selected_variant.id }}"
+  data-add-on-count="{{ add_on_products.size | default: 0 }}"
+  {% if add_on_products == blank and show_sleeve_styles == false and request.design_mode == false %}hidden{% endif %}
+>
+  {%- if add_on_products != blank -%}
+    <div class="variant-add-ons__list">
+      {%- for add_on_product_handle in add_on_products -%}
+        {%- assign add_on_product = all_products[add_on_product_handle] -%}
+        {%- assign add_on_variant = add_on_product.selected_or_first_available_variant -%}
+        {%- if add_on_variant != blank -%}
+          {%- assign input_id = 'AddOn-' | append: section_id | append: '-' | append: add_on_variant.id -%}
+          {%- assign add_on_price = add_on_variant.price | money_without_currency | replace: ',', '' -%}
+          {%- assign add_on_currency = cart.currency.iso_code | default: shop.currency -%}
+          {%- capture add_on_selection_label -%}
+            {{- 'products.product.add_ons.yes_with_price' | t: currency: add_on_currency, price: add_on_price -}}
+          {%- endcapture -%}
+          <fieldset class="variant-add-ons__item">
+            <legend class="variant-add-ons__heading">{{ add_on_product.title | escape }}</legend>
+            <div class="variant-add-ons__option">
+              <input
+                id="{{ input_id }}"
+                class="variant-add-ons__input"
+                type="checkbox"
+                value="{{ add_on_variant.id }}"
+                data-add-on-variant
+                data-add-on-property-name="{{ add_on_product.title | escape }}"
+                data-add-on-property-value="{{ add_on_selection_label | escape }}"
+                {% unless add_on_variant.available %}disabled{% endunless %}
+              >
+              <label class="variant-add-ons__label" for="{{ input_id }}">
+                {%- if add_on_variant.available -%}
+                  {{- add_on_selection_label -}}
+                {%- else -%}
+                  {{- 'products.product.sold_out' | t -}}
+                {%- endif -%}
+              </label>
+            </div>
+          </fieldset>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- elsif request.design_mode -%}
+    <p class="variant-add-ons__diagnostic">
+      {{-
+        'products.product.add_ons.empty_admin_html'
+        | t: variant: selected_variant.title, namespace: 'custom', key: 'add_on_product'
+      -}}
+    </p>
+  {%- endif -%}
+
+  {%- if show_sleeve_styles -%}
+    <fieldset class="sleeve-style-picker">
+      <legend class="variant-add-ons__heading">Select Your Preferred Sleeve Style</legend>
+      <div class="sleeve-style-picker__list" role="radiogroup" aria-label="Select Your Preferred Sleeve Style">
+        {%- for sleeve_style in sleeve_style_options -%}
+          {%- assign sleeve_style_input_id = 'SleeveStyle-' | append: section_id | append: '-' | append: forloop.index -%}
+          <div class="sleeve-style-picker__option">
+            <input
+              id="{{ sleeve_style_input_id }}"
+              class="sleeve-style-picker__input"
+              type="radio"
+              name="properties[Sleeve Style]"
+              value="{{ sleeve_style | strip | escape }}"
+              data-sleeve-style
+            >
+            <label class="sleeve-style-picker__label" for="{{ sleeve_style_input_id }}">
+              <span class="sleeve-style-picker__radio" aria-hidden="true"></span>
+              <span class="sleeve-style-picker__title">{{ sleeve_style | strip | escape }}</span>
+            </label>
+          </div>
+        {%- endfor -%}
+      </div>
+      <p class="sleeve-style-picker__error" data-sleeve-style-error role="alert" hidden>Please select a sleeve style.</p>
+    </fieldset>
+  {%- endif -%}
+</variant-add-on-products>
+
+{% stylesheet %}
+  .variant-add-ons {
+    display: block;
+    margin: 0 0 2rem;
+  }
+
+  .variant-add-ons[hidden] {
+    display: none;
+  }
+
+  .variant-add-ons__list {
+    display: grid;
+    gap: 2.4rem;
+  }
+
+  .variant-add-ons__item {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .variant-add-ons__heading {
+    margin: 0 0 10px;
+    padding: 0;
+    color: #1C1C1C;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .variant-add-ons__option {
+    position: relative;
+  }
+
+  .variant-add-ons__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+
+  .variant-add-ons__label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 12px;
+    border: 0;
+    background: #f1f1f1;
+    color: #1c1c1c;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.2;
+    text-transform: uppercase;
+    transition: background-color var(--duration-short) ease, color var(--duration-short) ease;
+  }
+
+  .variant-add-ons__label:hover {
+    background: #e5e5e5;
+  }
+
+  .variant-add-ons__input:focus-visible + .variant-add-ons__label {
+    outline: 0.2rem solid rgba(var(--color-foreground), 0.5);
+    outline-offset: 0.3rem;
+  }
+
+  .variant-add-ons__input:checked + .variant-add-ons__label {
+    background: #1c1c1c;
+    color: #fff;
+  }
+
+  .variant-add-ons__input:disabled + .variant-add-ons__label {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .variant-add-ons__diagnostic {
+    margin: 0 0 2rem;
+    padding: 1.2rem;
+    border: 1px dashed rgba(var(--color-foreground), 0.45);
+    color: rgba(var(--color-foreground), 0.75);
+    font-size: 1.3rem;
+    line-height: 1.5;
+  }
+
+  .sleeve-style-picker {
+    min-width: 0;
+    margin: 2.4rem 0 2rem;
+    padding: 0;
+    border: 0;
+  }
+
+  .sleeve-style-picker__list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .sleeve-style-picker__option {
+    flex: 0 0 auto;
+  }
+
+  .sleeve-style-picker__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+
+  .sleeve-style-picker__label {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #1c1c1c;
+    cursor: pointer;
+    font-size: 1.6rem;
+    line-height: 1.4;
+  }
+
+  .sleeve-style-picker__radio {
+    position: relative;
+    display: inline-block;
+    width: 2.2rem;
+    height: 2.2rem;
+    flex: 0 0 2.2rem;
+    border: 2px solid #888;
+    border-radius: 50%;
+  }
+
+  .sleeve-style-picker__input:checked + .sleeve-style-picker__label .sleeve-style-picker__radio::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: #1c1c1c;
+    content: '';
+    transform: translate(-50%, -50%);
+  }
+
+  .sleeve-style-picker__title {
+    display: block;
+  }
+
+  .sleeve-style-picker__input:focus-visible + .sleeve-style-picker__label {
+    outline: 0.2rem solid rgba(var(--color-foreground), 0.5);
+    outline-offset: 0.3rem;
+  }
+
+  .sleeve-style-picker__error {
+    margin: 1.6rem 0 0;
+    color: #c62828;
+    font-size: 1.6rem;
+    line-height: 1.4;
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  if (!customElements.get('variant-add-on-products')) {
+    customElements.define(
+      'variant-add-on-products',
+      class VariantAddOnProducts extends HTMLElement {
+        connectedCallback() {
+          this.form = document.getElementById(this.dataset.formId);
+          this.onChange = this.updateDynamicCheckout.bind(this);
+          this.onSubmit = this.prepareCartItems.bind(this);
+          this.onVariantChange = this.updateForVariant.bind(this);
+
+          this.addEventListener('change', this.onChange);
+          this.form?.addEventListener('submit', this.onSubmit, true);
+
+          if (typeof subscribe === 'function' && typeof PUB_SUB_EVENTS !== 'undefined') {
+            this.unsubscribeVariant = subscribe(PUB_SUB_EVENTS.variantChange, this.onVariantChange);
+          }
+        }
+
+        disconnectedCallback() {
+          this.removeEventListener('change', this.onChange);
+          this.form?.removeEventListener('submit', this.onSubmit, true);
+          this.unsubscribeVariant?.();
+        }
+
+        updateForVariant(event) {
+          const data = event?.data;
+          if (String(data?.sectionId) !== String(this.dataset.sectionId) || !data.html) return;
+          const source = data.html.getElementById(this.id);
+          this.innerHTML = source?.innerHTML || '';
+          this.hidden = !source || source.hidden;
+          this.updateDynamicCheckout();
+        }
+
+        updateDynamicCheckout() {
+          const hasSelectedAddOn = Boolean(this.querySelector('[data-add-on-variant]:checked'));
+          const sleeveStylePicker = this.querySelector('.sleeve-style-picker');
+          const hasSelectedSleeveStyle = Boolean(this.querySelector('[data-sleeve-style]:checked'));
+          const sleeveStyleError = this.querySelector('[data-sleeve-style-error]');
+          if (sleeveStyleError && hasSelectedSleeveStyle) sleeveStyleError.hidden = true;
+          const dynamicCheckout = this.form?.querySelector('.shopify-payment-button');
+          if (dynamicCheckout) {
+            dynamicCheckout.hidden = hasSelectedAddOn || (sleeveStylePicker && !hasSelectedSleeveStyle);
+          }
+        }
+
+        prepareCartItems(event) {
+          const sleeveStylePicker = this.querySelector('.sleeve-style-picker');
+          const selectedSleeveStyle = this.querySelector('[data-sleeve-style]:checked');
+          const sleeveStyleError = this.querySelector('[data-sleeve-style-error]');
+
+          if (sleeveStylePicker && !selectedSleeveStyle) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            if (sleeveStyleError) sleeveStyleError.hidden = false;
+            return;
+          }
+
+          if (sleeveStyleError) sleeveStyleError.hidden = true;
+
+          const selectedAddOns = Array.from(this.querySelectorAll('[data-add-on-variant]:checked'));
+          if (!this.form) return;
+
+          const temporaryFields = [];
+
+          // Re-submit the selected style as a temporary hidden field so the
+          // property is always present in Shopify's FormData payload.
+          const sleeveStyleName = selectedSleeveStyle?.getAttribute('name');
+          if (selectedSleeveStyle && sleeveStyleName) {
+            selectedSleeveStyle.removeAttribute('name');
+
+            const sleeveStyleProperty = document.createElement('input');
+            sleeveStyleProperty.type = 'hidden';
+            sleeveStyleProperty.name = 'properties[Sleeve Style]';
+            sleeveStyleProperty.value = selectedSleeveStyle.value;
+            this.form.appendChild(sleeveStyleProperty);
+            temporaryFields.push(sleeveStyleProperty);
+          }
+
+          selectedAddOns.forEach((checkbox) => {
+            const addOnId = document.createElement('input');
+            addOnId.type = 'hidden';
+            addOnId.name = 'iznik_add_on_id';
+            addOnId.value = checkbox.value;
+            this.form.appendChild(addOnId);
+            temporaryFields.push(addOnId);
+
+            const mainProductAddOnProperty = document.createElement('input');
+            mainProductAddOnProperty.type = 'hidden';
+            mainProductAddOnProperty.name = `properties[${checkbox.dataset.addOnPropertyName}]`;
+            mainProductAddOnProperty.value = checkbox.dataset.addOnPropertyValue;
+            this.form.appendChild(mainProductAddOnProperty);
+            temporaryFields.push(mainProductAddOnProperty);
+          });
+
+          setTimeout(() => {
+            temporaryFields.forEach((field) => field.remove());
+            if (selectedSleeveStyle && sleeveStyleName) {
+              selectedSleeveStyle.setAttribute('name', sleeveStyleName);
+            }
+          });
+        }
+      }
+    );
+  }
+{% endjavascript %}

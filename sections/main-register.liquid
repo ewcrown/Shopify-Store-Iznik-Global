@@ -1,11 +1,20 @@
 {{ 'customer.css' | asset_url | stylesheet_tag }}
 
-<div class="section customer register spacing"
-  style="
-    --p-spacing-t: {{ section.settings.padding_top }}px;
-    --p-spacing-b: {{ section.settings.padding_bottom }}px;
-  "
->
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="customer register section-{{ section.id }}-padding">
   <h1>
     {{ 'customer.register.title' | t }}
   </h1>
@@ -15,33 +24,24 @@
         <span class="svg-wrapper">
           {{- 'icon-error.svg' | inline_asset_content -}}
         </span>
-        {{ 'content.form.error_heading' | t }}
+        {{ 'templates.contact.form.error_heading' | t }}
       </h2>
-      <div class="alertBox alertBox--error">
-          <div class="alertBox-message">
-              <ul>
-                  {%- for field in form.errors -%}
-                      <li>
-                          {%- if field == 'form' -%}
-                            {{ form.errors.messages[field]  }}
-                          {%- else -%}
-                            <a href="#RegisterForm-{{ field }}" class="link link-underline">
-                              <span class="text">
-                                  {{ form.errors.translated_fields[field] | capitalize }}
-                                  {{ form.errors.messages[field] }}
-                              </span>
-                            </a>
-                          {%- endif -%}
-                      </li>
-                  {%- endfor -%}
-              </ul>
-          </div>
-      </div>
+      <ul>
+        {%- for field in form.errors -%}
+          <li>
+            {%- if field == 'form' -%}
+              {{ form.errors.messages[field] }}
+            {%- else -%}
+              <a href="#RegisterForm-{{ field }}">
+                {{ form.errors.translated_fields[field] | capitalize }}
+                {{ form.errors.messages[field] }}
+              </a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
     {%- endif -%}
     <div class="field">
-      <label for="RegisterForm-FirstName">
-        {{ 'customer.register.first_name' | t }}
-      </label>
       <input
         type="text"
         name="customer[first_name]"
@@ -52,11 +52,11 @@
         autocomplete="given-name"
         placeholder="{{ 'customer.register.first_name' | t }}"
       >
+      <label for="RegisterForm-FirstName">
+        {{ 'customer.register.first_name' | t }}
+      </label>
     </div>
     <div class="field">
-      <label for="RegisterForm-LastName">
-        {{ 'customer.register.last_name' | t }}
-      </label>
       <input
         type="text"
         name="customer[last_name]"
@@ -67,11 +67,11 @@
         autocomplete="family-name"
         placeholder="{{ 'customer.register.last_name' | t }}"
       >
+      <label for="RegisterForm-LastName">
+        {{ 'customer.register.last_name' | t }}
+      </label>
     </div>
     <div class="field">
-      <label for="RegisterForm-email">
-        {{ 'customer.register.email' | t }}
-      </label>
       <input
         type="email"
         name="customer[email]"
@@ -89,6 +89,9 @@
         {% endif %}
         placeholder="{{ 'customer.register.email' | t }}"
       >
+      <label for="RegisterForm-email">
+        {{ 'customer.register.email' | t }}
+      </label>
     </div>
     {%- if form.errors contains 'email' -%}
       <span id="RegisterForm-email-error" class="form__message">
@@ -100,9 +103,6 @@
       </span>
     {%- endif -%}
     <div class="field">
-      <label for="RegisterForm-password">
-        {{ 'customer.register.password' | t }}
-      </label>
       <input
         type="password"
         name="customer[password]"
@@ -114,6 +114,9 @@
         {% endif %}
         placeholder="{{ 'customer.register.password' | t }}"
       >
+      <label for="RegisterForm-password">
+        {{ 'customer.register.password' | t }}
+      </label>
     </div>
     {%- if form.errors contains 'password' -%}
       <span id="RegisterForm-password-error" class="form__message">
@@ -124,30 +127,28 @@
         {{ form.errors.messages.password }}.
       </span>
     {%- endif -%}
-    <div class="field">
-      <button class="button button--primary">
-        {{ 'customer.register.create_an_account' | t }}
-      </button>
-    </div>
+    <button>
+      {{ 'customer.register.submit' | t }}
+    </button>
   {%- endform -%}
 </div>
 
 {% schema %}
 {
-  "name": "t:names.registration",
+  "name": "t:sections.main-register.name",
   "settings": [
     {
       "type": "header",
-      "content": "t:content.section_padding"
+      "content": "t:sections.all.padding.section_padding_heading"
     },
     {
       "type": "range",
       "id": "padding_top",
       "min": 0,
       "max": 100,
-      "step": 1,
+      "step": 4,
       "unit": "px",
-      "label": "t:settings.top",
+      "label": "t:sections.all.padding.padding_top",
       "default": 36
     },
     {
@@ -155,9 +156,9 @@
       "id": "padding_bottom",
       "min": 0,
       "max": 100,
-      "step": 1,
+      "step": 4,
       "unit": "px",
-      "label": "t:settings.bottom",
+      "label": "t:sections.all.padding.padding_bottom",
       "default": 36
     }
   ]

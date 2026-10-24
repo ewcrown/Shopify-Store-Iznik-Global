@@ -1,0 +1,50 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "padding_top": 28,
+        "padding_bottom": 28
+      }
+    },
+    "lookbook_detail_G8zWfm": {
+      "type": "lookbook-detail",
+      "name": "Lookbook detail",
+      "settings": {
+        "show_title": true,
+        "title_size": 18,
+        "mobile_title_size": 16,
+        "title_weight": "600",
+        "title_transform": "uppercase",
+        "title_letter_spacing": 0,
+        "title_color": "#222222",
+        "title_bottom_spacing": 30,
+        "mobile_title_bottom_spacing": 20,
+        "image_gap": 10,
+        "mobile_image_gap": 6,
+        "max_width": 1400,
+        "side_padding": 24,
+        "mobile_side_padding": 12,
+        "background_color": "#ffffff",
+        "padding_top": 32,
+        "padding_bottom": 40,
+        "mobile_padding_top": 20,
+        "mobile_padding_bottom": 20
+      }
+    }
+  },
+  "order": [
+    "main",
+    "lookbook_detail_G8zWfm"
+  ]
+}
